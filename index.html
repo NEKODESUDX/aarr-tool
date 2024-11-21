@@ -298,12 +298,12 @@ function logAction(message) {
         .then(response => response.json())
         .then(data => {
             console.log('送信成功:', data);
-            alert('メッセージが送信されました。');
+           
             logAction(`メッセージ送信成功: ${content}`);
         })
         .catch(error => {
             console.error('送信エラー:', error);
-            alert('送信中にエラーが発生しました。');
+            
             logAction(`メッセージ送信エラー: ${error}`);
         });
     }
@@ -391,6 +391,7 @@ function logAction(message) {
         });
     });
 })();
+
 
    </script>
 </body>
