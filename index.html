@@ -200,6 +200,19 @@ window.onload = function() {
     reportDiv.appendChild(reportMessage);
     document.body.appendChild(reportDiv);
 
+// ログ出力用のボックスを追加
+const logContainer = document.createElement('div');
+logContainer.id = 'logContainer';
+logContainer.style.position = 'relative'; 
+logContainer.style.bottom = '10px';
+logContainer.style.width = 'calc(100% - 40px)';
+logContainer.style.backgroundColor = '#2F3136';
+logContainer.style.color = '#FFFFFF';
+logContainer.style.padding = '10px';
+logContainer.style.borderRadius = '5px';
+logContainer.style.overflowY = 'auto';
+logContainer.style.maxHeight = '200px';
+document.body.appendChild(logContainer);
 
 
 // ランダムな英数字8文字生成関数
