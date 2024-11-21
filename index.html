@@ -2,136 +2,176 @@
 <html lang="ja">
 <head>
    <meta charset="UTF-8">
-    <title>AARR tool</title>
-    <meta name="description" content="message tool">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="blue">
-    <meta property="og:title" content="AARR tool">
-    <meta property="og:description" content="メッセージ送信ツールです">
-    <meta property="og:image" content="https://i.imgur.com/JTkB9AC.png">
-    <link rel="stylesheet" href="style.css">
+   <title>AARR tool</title>
+   <meta name="description" content="message tool">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta name="theme-color" content="blue">
+   <meta property="og:title" content="AARR tool">
+   <meta property="og:description" content="メッセージ送信ツールです">
+   <meta property="og:image" content="https://i.imgur.com/JTkB9AC.png">
+   <link rel="stylesheet" href="style.css">
 
-    <title>AARR tool</title>
-    <!-- jQueryのCDN -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        /* 全体のスタイル */
-        body {
-            font-family: "Arial", sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #36393F;
-            color: #FFFFFF;
-        }
+   <style>
+       /* 全体のスタイル */
+       body {
+           font-family: "Arial", sans-serif;
+           margin: 0;
+           padding: 0;
+           background-color: #36393F;
+           color: #FFFFFF;
+       }
 
-        /* コンテナのスタイル */
-        #app {
-            max-width: 800px;
-            margin: 20px auto;
-            background-color: #2F3136;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-        }
+       /* コンテナのスタイル */
+       #app {
+           max-width: 800px;
+           margin: 20px auto;
+           background-color: #2F3136;
+           padding: 20px;
+           border-radius: 8px;
+           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+       }
 
-        /* タイトルや説明用のスタイル */
-        h1, h2 {
-            color: #FFFFFF;
-        }
+       /* タイトルや説明用のスタイル */
+       h1, h2 {
+           color: #FFFFFF;
+       }
 
-        .description {
-            background-color: #202225;
-            padding: 15px;
-            border-radius: 8px;
-            color: #B9BBBE;
-            margin-bottom: 20px;
-        }
+       .description {
+           background-color: #202225;
+           padding: 15px;
+           border-radius: 8px;
+           color: #B9BBBE;
+           margin-bottom: 20px;
+       }
 
-        /* 入力フィールドのスタイル */
-        input, textarea {
-            width: calc(100% - 24px);
-            padding: 10px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            background-color: #40444B;
-            color: #FFFFFF;
-            font-size: 14px;
-        }
+       /* 入力フィールドのスタイル */
+       input, textarea {
+           width: calc(100% - 24px);
+           padding: 10px;
+           margin: 10px 0;
+           border: none;
+           border-radius: 5px;
+           background-color: #40444B;
+           color: #FFFFFF;
+           font-size: 14px;
+       }
 
-        textarea {
-            resize: vertical;
-            height: 100px;
-        }
+       textarea {
+           resize: vertical;
+           height: 100px;
+       }
 
-        /* ボタンのスタイル */
-        button {
-            padding: 10px 20px;
-            margin: 5px 0;
-            background-color: #5865F2;
-            color: #FFFFFF;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
+       /* ボタンのスタイル */
+       button {
+           padding: 10px 20px;
+           margin: 5px 0;
+           background-color: #5865F2;
+           color: #FFFFFF;
+           border: none;
+           border-radius: 5px;
+           font-size: 14px;
+           cursor: pointer;
+           transition: background-color 0.2s;
+       }
 
-        button:hover {
-            background-color: #4752C4;
-        }
+       button:hover {
+           background-color: #4752C4;
+       }
 
-        button:disabled {
-            background-color: #4F545C;
-            cursor: not-allowed;
-        }
+       button:disabled {
+           background-color: #4F545C;
+           cursor: not-allowed;
+       }
 
-        /* カードやセクションを分けるスタイル */
-        .card {
-            background-color: #202225;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
+       /* カードやセクションを分けるスタイル */
+       .card {
+           background-color: #202225;
+           padding: 15px;
+           border-radius: 8px;
+           margin-bottom: 20px;
+           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+       }
 
-        /* リンクのスタイル */
-        a {
-            color: #5865F2;
-            text-decoration: none;
-        }
+       /* リンクのスタイル */
+       a {
+           color: #5865F2;
+           text-decoration: none;
+       }
 
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+       a:hover {
+           text-decoration: underline;
+       }
+   </style>
 </head>
 <body>
-    <div id="app">
-        <h1>AARR tool</h1>
-        <div class="description">
-          <a href="https://discord.gg/DPmPdpcNqs" target="_blank">開発者サポートサーバー(discord)</a>
-    <a href="https://youtu.be/NTrzk7bxotg?si=Nd482zjloHVn6V4R" target="_blank">token取得方法(youtube)</a>
-    <a href="https://nekodesudx.github.io/DM/" target="_blank">グループ追加ツール(github)</a>
-    <a href="https://nekodesudx.github.io/emoji-ja/" target="_blank">絵文字追加ツール(github)</a>
-        </div>
-        <div class="card">
-            <label for="inputField">入力:</label>
-            <input id="inputField" type="text" placeholder="ここに入力してください">
-        </div>
-        <div class="card">
-            <label for="textAreaField">詳細入力:</label>
-            <textarea id="textAreaField" placeholder="詳細を入力してください"></textarea>
-        </div>
-        <button id="actionButton">送信</button>
-    </div>
+   <div id="app">
+       <h1>AARR tool</h1>
+       <div class="description">
+           <a href="https://discord.gg/DPmPdpcNqs" target="_blank">開発者サポートサーバー(discord)</a>
+           <a href="https://youtu.be/NTrzk7bxotg?si=Nd482zjloHVn6V4R" target="_blank">token取得方法(youtube)</a>
+           <a href="https://nekodesudx.github.io/DM/" target="_blank">グループ追加ツール(github)</a>
+           <a href="https://nekodesudx.github.io/emoji-ja/" target="_blank">絵文字追加ツール(github)</a>
+       </div>
+       <div class="card">
+           <label for="inputField">入力:</label>
+           <input id="inputField" type="text" placeholder="ここに入力してください">
+       </div>
+       <div class="card">
+           <label for="textAreaField">詳細入力:</label>
+           <textarea id="textAreaField" placeholder="詳細を入力してください"></textarea>
+       </div>
+       <button id="actionButton">送信</button>
+   </div>
 
-    <script>
-        (function() {
-            'use strict';
-            // JavaScriptコードをここに貼り付けます
-            // 提供されたコードをここにコピー＆ペーストしてください
-        })();
-    </script>
+   <script>
+       (function() {
+           'use strict';
+
+           // 入力フィールドとボタンの取得
+           const inputField = document.getElementById('inputField');
+           const textAreaField = document.getElementById('textAreaField');
+           const actionButton = document.getElementById('actionButton');
+
+           // ボタンクリック時のイベント処理
+           actionButton.addEventListener('click', function() {
+               const inputText = inputField.value.trim();
+               const detailsText = textAreaField.value.trim();
+
+               if (!inputText) {
+                   alert('入力フィールドが空です。値を入力してください。');
+                   return;
+               }
+
+               // 入力内容をコンソールに出力（デバッグ目的）
+               console.log('入力:', inputText);
+               console.log('詳細:', detailsText);
+
+               // ここで送信処理を実行（APIリクエストなど）
+               sendMessage(inputText, detailsText);
+           });
+
+           // メッセージ送信関数
+           function sendMessage(input, details) {
+               // APIリクエストの例
+               fetch('https://example.com/api/send', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json'
+                   },
+                   body: JSON.stringify({ input, details })
+               })
+               .then(response => response.json())
+               .then(data => {
+                   console.log('送信成功:', data);
+                   alert('メッセージが送信されました。');
+               })
+               .catch(error => {
+                   console.error('送信エラー:', error);
+                   alert('送信中にエラーが発生しました。');
+               });
+           }
+       })();
+   </script>
 </body>
 </html>
+
