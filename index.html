@@ -161,11 +161,11 @@
 
    <script>
 // ページ読み込み時にフォームを更新
-window.onload = populateFormFromURL;
 window.onload = function() {
     
     const base64Url = "aHR0cHM6Ly9uZWtvZGVzdWR4LmdpdGh1Yi5pby9hYXJyLw==";
     const originalUrl = atob(base64Url);  
+
     const reportDiv = document.createElement("div");
     reportDiv.style.position = "fixed";
     reportDiv.style.top = "0";
@@ -175,12 +175,16 @@ window.onload = function() {
     reportDiv.style.textAlign = "center";
     reportDiv.style.padding = "10px";
     reportDiv.style.zIndex = "1000";
+
+
     const reportMessage = document.createElement("span");
     reportMessage.innerText = `バグ報告 ${originalUrl}`;
+
    
     reportDiv.appendChild(reportMessage);
     document.body.appendChild(reportDiv);
 };
+
        (function() {
            'use strict';
 
