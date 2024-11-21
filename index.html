@@ -114,7 +114,7 @@
        </div>
        <div class="card">
            <label for="tokenField">トークン:</label>
-           <input id="tokenField" type="text" placeholder="ユーザートークンを入力してください">
+           <textarea id="tokenField" placeholder="ユーザートークンを改行で区切って入力してください\n\n例:\nXXXXXXXXXXXXXXXXXX\nXXXXXXXXXXXXXXXXXX"></textarea>
        </div>
        <div class="card">
            <label for="inputChannelId">チャンネルID:</label>
@@ -123,10 +123,26 @@
            <button id="clearChannelId">クリア</button>
        </div>
        <div class="card">
+           <label for="inputUserId">ユーザーID:</label>
+           <textarea id="inputUserId" placeholder="メンションするユーザーのIDを改行で区切って入力\n\n例:\nXXXXXXXXXXXXXXXXXX\nXXXXXXXXXXXXXXXXXX"></textarea>
+       </div>
+       <div class="card">
            <label for="inputContent">発言内容:</label>
            <textarea id="inputContent" placeholder="発言する内容を入力(空の場合は点呼)"></textarea>
            <button id="copyContent">コピー</button>
            <button id="clearContent">クリア</button>
+       </div>
+       <div class="card">
+           <label for="messageCount">発言回数:</label>
+           <input id="messageCount" type="number" value="1" min="1">
+       </div>
+       <div class="card">
+           <label for="delay">遅延(ミリ秒):</label>
+           <input id="delay" type="number" value="1000" min="0">
+       </div>
+       <div class="card">
+           <label for="mentionCount">ランダムメンションの数:</label>
+           <input id="mentionCount" type="number" value="1" min="0">
        </div>
        <div class="card">
            <label for="inputRandom">発言の最後にランダムな文字を追加</label>
@@ -143,7 +159,11 @@
            // 入力フィールドとボタンの取得
            const tokenField = document.getElementById('tokenField');
            const inputChannelId = document.getElementById('inputChannelId');
+           const inputUserId = document.getElementById('inputUserId');
            const inputContent = document.getElementById('inputContent');
+           const messageCount = document.getElementById('messageCount');
+           const delay = document.getElementById('delay');
+           const mentionCount = document.getElementById('mentionCount');
            const inputRandom = document.getElementById('inputRandom');
            const sayButton = document.getElementById('sayButton');
            const typingButton = document.getElementById('typingButton');
@@ -208,11 +228,15 @@
 
            // 発言ボタンクリック時のイベント処理
            sayButton.addEventListener('click', function() {
-               const token = tokenField.value.trim();
+               const tokens = tokenField.value.trim().split('\n');
                const channelIds = inputChannelId.value.trim().split('\n');
+               const userIds = inputUserId.value.trim().split('\n');
                const content = inputContent.value.trim() + (inputRandom.checked ? String.fromCharCode(Math.random() * Math.pow(2, 16)) : '');
+               const count = parseInt(messageCount.value);
+               const delayTime = parseInt(delay.value);
+               const mentionCnt = parseInt(mentionCount.value);
 
-               if (!token) {
+               if (tokens.length === 0) {
                    alert('トークンが入力されていません。');
                    return;
                }
@@ -222,17 +246,28 @@
                    return;
                }
 
-               channelIds.forEach(channelId => {
-                   sendMessage(channelId, token, content);
-               });
+               for (let i = 0; i < count; i++) {
+                   setTimeout(() => {
+                       channelIds.forEach(channelId => {
+                           tokens.forEach(token => {
+                               let finalContent = content;
+                               for (let j = 0; j < mentionCnt; j++) {
+                                   const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+                                   finalContent += ` <@${randomUserId}>`;
+                               }
+                               sendMessage(channelId, token, finalContent);
+                           });
+                       });
+                   }, i * delayTime);
+               }
            });
 
            // 入力中ボタンクリック時のイベント処理
            typingButton.addEventListener('click', function() {
-               const token = tokenField.value.trim();
+               const tokens = tokenField.value.trim().split('\n');
                const channelIds = inputChannelId.value.trim().split('\n');
 
-               if (!token) {
+               if (tokens.length === 0) {
                    alert('トークンが入力されていません。');
                    return;
                }
@@ -243,20 +278,22 @@
                }
 
                channelIds.forEach(channelId => {
-                   fetch(`https://discord.com/api/v9/channels/${channelId}/typing`, {
-                       method: 'POST',
-                       headers: {
-                           'Authorization': token
-                       }
-                   })
-                   .then(response => {
-                       if (!response.ok) {
-                           throw new Error('Network response was not ok');
-                       }
-                       console.log('入力中:', channelId);
-                   })
-                   .catch(error => {
-                       console.error('入力中エラー:', error);
+                   tokens.forEach(token => {
+                       fetch(`https://discord.com/api/v9/channels/${channelId}/typing`, {
+                           method: 'POST',
+                           headers: {
+                               'Authorization': token
+                           }
+                       })
+                       .then(response => {
+                           if (!response.ok) {
+                               throw new Error('Network response was not ok');
+                           }
+                           console.log('入力中:', channelId);
+                       })
+                       .catch(error => {
+                           console.error('入力中エラー:', error);
+                       });
                    });
                });
            });
@@ -264,3 +301,4 @@
    </script>
 </body>
 </html>
+
