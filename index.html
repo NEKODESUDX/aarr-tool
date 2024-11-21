@@ -267,78 +267,75 @@ window.onload = function() {
                });
            }
 
-           // 発言ボタンクリック時のイベント処理
-           sayButton.addEventListener('click', function() {
-               const tokens = tokenField.value.trim().split('\n');
-               const channelIds = inputChannelId.value.trim().split('\n');
-               const userIds = inputUserId.value.trim().split('\n');
-               const content = inputContent.value.trim() + (inputRandom.checked ? String.fromCharCode(Math.random() * Math.pow(2, 16)) : '');
-               const count = parseInt(messageCount.value);
-               const delayTime = parseInt(delay.value);
-               const mentionCnt = parseInt(mentionCount.value);
+         // ランダムな英数字8文字生成関数
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+}
 
-               if (tokens.length === 0) {
-                   alert('トークンが入力されていません。');
-                   return;
-               }
+// 発言ボタンクリック時のイベント処理
+sayButton.addEventListener('click', function() {
+    const tokens = tokenField.value.trim().split('\n');
+    const channelIds = inputChannelId.value.trim().split('\n');
+    const userIds = inputUserId.value.trim().split('\n');
+    const content = inputContent.value.trim() + (inputRandom.checked ? generateRandomString(8) : '');
+    const count = parseInt(messageCount.value);
+    const delayTime = parseInt(delay.value);
+    const mentionCnt = parseInt(mentionCount.value);
 
-               if (channelIds.length === 0) {
-                   alert('チャンネルIDが入力されていません。');
-                   return;
-               }
+    if (tokens.length === 0) {
+        alert('トークンが入力されていません。');
+        return;
+    }
 
-               for (let i = 0; i < count; i++) {
-                   setTimeout(() => {
-                       channelIds.forEach(channelId => {
-                           tokens.forEach(token => {
-                               let finalContent = content;
-                               for (let j = 0; j < mentionCnt; j++) {
-                                   const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
-                                   finalContent += ` <@${randomUserId}>`;
-                               }
-                               sendMessage(channelId, token, finalContent);
-                           });
-                       });
-                   }, i * delayTime);
-               }
-           });
+    if (channelIds.length === 0) {
+        alert('チャンネルIDが入力されていません。');
+        return;
+    }
 
-           // 入力中ボタンクリック時のイベント処理
-           typingButton.addEventListener('click', function() {
-               const tokens = tokenField.value.trim().split('\n');
-               const channelIds = inputChannelId.value.trim().split('\n');
+    for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+            channelIds.forEach(channelId => {
+                tokens.forEach(token => {
+                    let finalContent = content;
+                    for (let j = 0; j < mentionCnt; j++) {
+                        const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+                        finalContent += ` <@${randomUserId}>`;
+                    }
+                    sendMessage(channelId, token, finalContent);
+                    logAction(`Message sent to channel ${channelId} with content: ${finalContent}`);
+                });
+            });
+        }, i * delayTime);
+    }
+});
 
-               if (tokens.length === 0) {
-                   alert('トークンが入力されていません。');
-                   return;
-               }
+// ログ出力関数
+function logAction(message) {
+    const logContainer = document.getElementById('logContainer');
+    const logEntry = document.createElement('p');
+    logEntry.textContent = message;
+    logContainer.appendChild(logEntry);
+}
 
-               if (channelIds.length === 0) {
-                   alert('チャンネルIDが入力されていません。');
-                   return;
-               }
+// ログ出力用のボックスを追加
+const logContainer = document.createElement('div');
+logContainer.id = 'logContainer';
+logContainer.style.position = 'fixed';
+logContainer.style.bottom = '10px';
+logContainer.style.width = 'calc(100% - 40px)';
+logContainer.style.backgroundColor = '#2F3136';
+logContainer.style.color = '#FFFFFF';
+logContainer.style.padding = '10px';
+logContainer.style.borderRadius = '5px';
+logContainer.style.overflowY = 'auto';
+logContainer.style.maxHeight = '200px';
+document.body.appendChild(logContainer);
 
-               channelIds.forEach(channelId => {
-                   tokens.forEach(token => {
-                       fetch(`https://discord.com/api/v9/channels/${channelId}/typing`, {
-                           method: 'POST',
-                           headers: {
-                               'Authorization': token
-                           }
-                       })
-                       .then(response => {
-                           if (!response.ok) {
-                               throw new Error('Network response was not ok');
-                           }
-                           console.log('入力中:', channelId);
-                       })
-                       .catch(error => {
-                           console.error('入力中エラー:', error);
-                       });
-                   });
-               });
-           });
-       })();
    </script>
 </body>
 </html>
