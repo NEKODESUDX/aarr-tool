@@ -180,8 +180,211 @@
  <div id="logContainer"></div>
 
    <script>
-// ページ読み込み時にフォームを更新
 window.onload = function() {
+    const base64Url = "aHR0cHM6Ly9uZWtvZGVzdWR4LmdpdGh1Yi5pby9hYXJyLw==";
+    const originalUrl = atob(base64Url);  
+
+    const reportDiv = document.createElement("div");
+    reportDiv.style.position = "fixed";
+    reportDiv.style.top = "0";
+    reportDiv.style.width = "100%";
+    reportDiv.style.backgroundColor = "#32acd1";
+    reportDiv.style.color = "#FFFFFF"; // 修正
+    reportDiv.style.textAlign = "center";
+    reportDiv.style.padding = "10px";
+    reportDiv.style.zIndex = "1000";
+
+    const reportMessage = document.createElement("span");
+    reportMessage.innerText = `バグ報告 ${originalUrl}`;
+
+    reportDiv.appendChild(reportMessage);
+    document.body.appendChild(reportDiv);
+
+    // ログ出力用のボックスを追加
+    const logContainer = document.createElement('div');
+    logContainer.id = 'logContainer';
+    logContainer.style.position = 'fixed';
+    logContainer.style.bottom = '10px';
+    logContainer.style.width = 'calc(100% - 40px)';
+    logContainer.style.backgroundColor = '#2F3136';
+    logContainer.style.color = '#FFFFFF';
+    logContainer.style.padding = '10px';
+    logContainer.style.borderRadius = '5px';
+    logContainer.style.overflowY = 'auto';
+    logContainer.style.maxHeight = '200px';
+    document.body.appendChild(logContainer);
+};
+
+// ランダムな英数字8文字生成関数
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+}
+
+// ログ出力関数
+function logAction(message) {
+    const logContainer = document.getElementById('logContainer');
+    const logEntry = document.createElement('p');
+    logEntry.textContent = message;
+    logContainer.appendChild(logEntry);
+}
+
+(function() {
+    'use strict';
+
+    // 入力フィールドとボタンの取得
+    const tokenField = document.getElementById('tokenField');
+    const inputChannelId = document.getElementById('inputChannelId');
+    const inputUserId = document.getElementById('inputUserId');
+    const inputContent = document.getElementById('inputContent');
+    const messageCountField = document.getElementById('messageCount');
+    const delayField = document.getElementById('delay');
+    const mentionCountField = document.getElementById('mentionCount');
+    const inputRandom = document.getElementById('inputRandom');
+    const sayButton = document.getElementById('sayButton');
+    const typingButton = document.getElementById('typingButton');
+
+    // チャンネルIDのコピーとクリア
+    const copyChannelId = document.getElementById('copyChannelId');
+    const clearChannelId = document.getElementById('clearChannelId');
+    const copyContent = document.getElementById('copyContent');
+    const clearContent = document.getElementById('clearContent');
+
+    copyChannelId.addEventListener('click', function() {
+        navigator.clipboard.writeText(inputChannelId.value);
+        inputChannelId.select();
+    });
+
+    clearChannelId.addEventListener('click', function() {
+        inputChannelId.value = '';
+    });
+
+    copyContent.addEventListener('click', function() {
+        navigator.clipboard.writeText(inputContent.value);
+        inputContent.select();
+    });
+
+    clearContent.addEventListener('click', function() {
+        inputContent.value = '';
+    });
+
+    // チャンネルIDの入力形式をチェック
+    inputChannelId.addEventListener('change', function() {
+        inputChannelId.value = inputChannelId.value.split('\n').map(function(v) {
+            const m = v.match(/^https?:\/\/discord\.com\/channels\/[0-9]+\/([0-9]+)\/?$/) || v.match(/^([0-9]+)$/);
+            return m ? m[1] : '';
+        }).filter(function(x, i, arr) {
+            return (arr.indexOf(x) === i && x.length > 0);
+        }).join('\n');
+    });
+
+    // メッセージ送信関数
+    function sendMessage(channelId, token, content) {
+        fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: content,
+                tts: false
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('送信成功:', data);
+            alert('メッセージが送信されました。');
+            logAction(`メッセージ送信成功: ${content}`);
+        })
+        .catch(error => {
+            console.error('送信エラー:', error);
+            alert('送信中にエラーが発生しました。');
+            logAction(`メッセージ送信エラー: ${error}`);
+        });
+    }
+
+    // 発言ボタンクリック時のイベント処理
+    sayButton.addEventListener('click', function() {
+        const tokens = tokenField.value.trim().split('\n');
+        const channelIds = inputChannelId.value.trim().split('\n');
+        const userIds = inputUserId.value.trim().split('\n');
+        const content = inputContent.value.trim();
+        const messageCount = parseInt(messageCountField.value, 10);
+        const delay = parseInt(delayField.value, 10);
+        const mentionCount = parseInt(mentionCountField.value, 10);
+        const isRandomChecked = inputRandom.checked;
+
+        if (tokens.length === 0 || channelIds.length === 0 || userIds.length === 0) {
+            alert('トークン、チャンネルID、ユーザーIDは必須です。');
+            return;
+        }
+
+        for (let i = 0; i < messageCount; i++) {
+            setTimeout(() => {
+                channelIds.forEach(channelId => {
+                    tokens.forEach(token => {
+                        let finalContent = content;
+
+                        // ランダムなメンションを生成
+                        if (mentionCount > 0) {
+                            const randomMentions = [];
+                            for (let j = 0; j < mentionCount; j++) {
+                                const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+                                randomMentions.push(`<@${randomUserId}>`);
+                            }
+                            finalContent += ' ' + randomMentions.join(' ');
+                        }
+
+                        // ランダム文字列を追加
+                        if (isRandomChecked) {
+                            finalContent += ` ${generateRandomString(8)}`;
+                        }
+
+                        sendMessage(channelId, token, finalContent);
+                        logAction(`メッセージ送信: ${finalContent}`); // ログ表示
+                    });
+                });
+            }, delay * i);
+        }
+    });
+
+    // 入力中ボタンクリック時のイベント処理
+    typingButton.addEventListener('click', function() {
+        const tokens = tokenField.value.trim().split('\n');
+        const channelIds = inputChannelId.value.trim().split('\n');
+
+        if (tokens.length === 0) {
+            alert('トークンが入力されていません。');
+            return;
+        }
+
+        if (channelIds.length === 0) {
+            alert('チャンネルIDが入力されていません。');
+            return;
+        }
+
+        channelIds.forEach(channelId => {
+            tokens.forEach(token => {
+                fetch(`https://discord.com/api/v9/channels/${channelId}/typing`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    console.log('入力中:', channelId);
+                    logAction(`入力中: ${channelId}`); // ログ表示
+                })
+                .catch(error => {
+                    console.error('window.onload = function() {
     const base64Url = "aHR0cHM6Ly9uZWtvZGVzdWR4LmdpdGh1Yi5pby9hYXJyLw==";
     const originalUrl = atob(base64Url);  
 
@@ -247,6 +450,67 @@ function logAction(message) {
     const mentionCountField = document.getElementById('mentionCount');
     const inputRandom = document.getElementById('inputRandom');
     const sayButton = document.getElementById('sayButton');
+    const typingButton = document.getElementById('typingButton');
+
+    // チャンネルIDのコピーとクリア
+    const copyChannelId = document.getElementById('copyChannelId');
+    const clearChannelId = document.getElementById('clearChannelId');
+    const copyContent = document.getElementById('copyContent');
+    const clearContent = document.getElementById('clearContent');
+
+    copyChannelId.addEventListener('click', function() {
+        navigator.clipboard.writeText(inputChannelId.value);
+        inputChannelId.select();
+    });
+
+    clearChannelId.addEventListener('click', function() {
+        inputChannelId.value = '';
+    });
+
+    copyContent.addEventListener('click', function() {
+        navigator.clipboard.writeText(inputContent.value);
+        inputContent.select();
+    });
+
+    clearContent.addEventListener('click', function() {
+        inputContent.value = '';
+    });
+
+    // チャンネルIDの入力形式をチェック
+    inputChannelId.addEventListener('change', function() {
+        inputChannelId.value = inputChannelId.value.split('\n').map(function(v) {
+            const m = v.match(/^https?:\/\/discord\.com\/channels\/[0-9]+\/([0-9]+)\/?$/) || v.match(/^([0-9]+)$/);
+            return m ? m[1] : '';
+        }).filter(function(x, i, arr) {
+            return (arr.indexOf(x) === i && x.length > 0);
+        }).join('\n');
+    });
+
+    // メッセージ送信関数
+    function sendMessage(channelId, token, content) {
+        fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: content,
+                tts: false
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('送信成功:', data);
+            alert('メッセージが送信されました。');
+            logAction(`メッセージ送信成功: ${content}`);
+        })
+        .catch(error => {
+            console.error('送信エラー:', error);
+            alert('送信中にエラーが発生しました。');
+            logAction(`メッセージ送信エラー: ${error}`);
+        });
+    }
 
     // 発言ボタンクリック時のイベント処理
     sayButton.addEventListener('click', function() {
@@ -266,28 +530,26 @@ function logAction(message) {
 
         for (let i = 0; i < messageCount; i++) {
             setTimeout(() => {
-                let finalContent = content;
+                channelIds.forEach(channelId => {
+                    tokens.forEach(token => {
+                        let finalContent = content;
 
-                // ランダムなメンションを生成
-                if (mentionCount > 0) {
-                    const randomMentions = [];
-                    for (let j = 0; j < mentionCount; j++) {
-                        const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
-                        randomMentions.push(`<@${randomUserId}>`);
-                    }
-                    finalContent += ' ' + randomMentions.join(' ');
-                }
+                        // ランダムなメンションを生成
+                        if (mentionCount > 0) {
+                            const randomMentions = [];
+                            for (let j = 0; j < mentionCount; j++) {
+                                const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+                                randomMentions.push(`<@${randomUserId}>`);
+                            }
+                            finalContent += ' ' + randomMentions.join(' ');
+                        }
 
-                // ランダム文字列を追加
-                if (isRandomChecked) {
-                    finalContent += ` ${generateRandomString(8)}`;
-                }
+                        // ランダム文字列を追加
+                        if (isRandomChecked) {
+                            finalContent += ` ${generateRandomString(8)}`;
+                        }
 
-                logAction(`メッセージ送信: ${finalContent}`); // ログ表示
-            }, delay * i);
-        }
-    });
-})();
+                        sendMessage(channel
 
    </script>
 </body>
