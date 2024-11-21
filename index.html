@@ -3,57 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discordツール</title>
+    <title>Discord風ツール</title>
     <!-- jQueryのCDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        /* 全体のスタイル */
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-            background-color: #f4f4f4;
+            font-family: "Arial", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #36393F;
+            color: #FFFFFF;
         }
-        button {
-            padding: 10px 15px;
-            margin: 5px;
-            background-color: #4caf50;
-            color: white;
+
+        /* コンテナのスタイル */
+        #app {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #2F3136;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* タイトルや説明用のスタイル */
+        h1, h2 {
+            color: #FFFFFF;
+        }
+
+        .description {
+            background-color: #202225;
+            padding: 15px;
+            border-radius: 8px;
+            color: #B9BBBE;
+            margin-bottom: 20px;
+        }
+
+        /* 入力フィールドのスタイル */
+        input, textarea {
+            width: calc(100% - 24px);
+            padding: 10px;
+            margin: 10px 0;
             border: none;
             border-radius: 5px;
-            cursor: pointer;
+            background-color: #40444B;
+            color: #FFFFFF;
+            font-size: 14px;
         }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        input, textarea {
-            padding: 10px;
-            margin: 5px;
-            width: calc(100% - 22px);
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
+
         textarea {
             resize: vertical;
+            height: 100px;
         }
-        .description {
-            background-color: #e9e9e9;
-            padding: 10px;
+
+        /* ボタンのスタイル */
+        button {
+            padding: 10px 20px;
+            margin: 5px 0;
+            background-color: #5865F2;
+            color: #FFFFFF;
+            border: none;
             border-radius: 5px;
-            margin-bottom: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #4752C4;
+        }
+
+        button:disabled {
+            background-color: #4F545C;
+            cursor: not-allowed;
+        }
+
+        /* カードやセクションを分けるスタイル */
+        .card {
+            background-color: #202225;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* リンクのスタイル */
+        a {
+            color: #5865F2;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- ツールがここに生成されます -->
+        <h1>Discord風ツール</h1>
+        <div class="description">
+            このツールはDiscordのデザインに似せたスタイルを持っています。以下のフォームを使って機能をお試しください。
+        </div>
+        <div class="card">
+            <label for="inputField">入力:</label>
+            <input id="inputField" type="text" placeholder="ここに入力してください">
+        </div>
+        <div class="card">
+            <label for="textAreaField">詳細入力:</label>
+            <textarea id="textAreaField" placeholder="詳細を入力してください"></textarea>
+        </div>
+        <button id="actionButton">送信</button>
     </div>
+
     <script>
         (function() {
             'use strict';
             // JavaScriptコードをここに貼り付けます
-            // ※貼り付ける際に<script>タグは不要です
-            // 提供されたコードをこのコメントの部分にそのまま入れてください
+            // 提供されたコードをここにコピー＆ペーストしてください
         })();
     </script>
 </body>
