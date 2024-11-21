@@ -167,6 +167,9 @@
        <button id="sayButton">送信</button>
        <button id="typingButton">入力中</button>
    </div>
+<!-- ログ出力用のボックス -->
+<div id="logContainer" style="position: fixed; bottom: 10px; width: calc(100% - 40px); background-color: #2F3136; color: #FFFFFF; padding: 10px; border-radius: 5px; overflow-y: auto; max-height: 200px;"></div>
+
 
    <script>
 // ページ読み込み時にフォームを更新
@@ -359,18 +362,10 @@ function logAction(message) {
 }
 
 // ログ出力用のボックスを追加
-const logContainer = document.createElement('div');
-logContainer.id = 'logContainer';
-logContainer.style.position = 'fixed';
-logContainer.style.bottom = '10px';
-logContainer.style.width = 'calc(100% - 40px)';
-logContainer.style.backgroundColor = '#2F3136';
-logContainer.style.color = '#FFFFFF';
-logContainer.style.padding = '10px';
-logContainer.style.borderRadius = '5px';
-logContainer.style.overflowY = 'auto';
-logContainer.style.maxHeight = '200px';
-document.body.appendChild(logContainer);
+document.body.insertAdjacentHTML('beforeend', `
+    <div id="logContainer" style="position: fixed; bottom: 10px; width: calc(100% - 40px); background-color: #2F3136; color: #FFFFFF; padding: 10px; border-radius: 5px; overflow-y: auto; max-height: 200px;"></div>
+`);
+
 
    </script>
 </body>
