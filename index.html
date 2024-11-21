@@ -339,6 +339,39 @@ window.onload = function() {
                });
            });
        })();
+// ランダムな英数字8文字生成関数
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+}
+
+
+// ログ出力関数
+function logAction(message) {
+    const logContainer = document.getElementById('logContainer');
+    const logEntry = document.createElement('p');
+    logEntry.textContent = message;
+    logContainer.appendChild(logEntry);
+}
+
+// ログ出力用のボックスを追加
+const logContainer = document.createElement('div');
+logContainer.id = 'logContainer';
+logContainer.style.position = 'fixed';
+logContainer.style.bottom = '10px';
+logContainer.style.width = 'calc(100% - 40px)';
+logContainer.style.backgroundColor = '#2F3136';
+logContainer.style.color = '#FFFFFF';
+logContainer.style.padding = '10px';
+logContainer.style.borderRadius = '5px';
+logContainer.style.overflowY = 'auto';
+logContainer.style.maxHeight = '200px';
+document.body.appendChild(logContainer);
+
    </script>
 </body>
 </html>
