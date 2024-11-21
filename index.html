@@ -113,14 +113,27 @@
            <a href="https://nekodesudx.github.io/emoji-ja/" target="_blank">絵文字追加ツール(github)</a>
        </div>
        <div class="card">
-           <label for="inputField">入力:</label>
-           <input id="inputField" type="text" placeholder="ここに入力してください">
+           <label for="tokenField">トークン:</label>
+           <input id="tokenField" type="text" placeholder="ユーザートークンを入力してください">
        </div>
        <div class="card">
-           <label for="textAreaField">詳細入力:</label>
-           <textarea id="textAreaField" placeholder="詳細を入力してください"></textarea>
+           <label for="inputChannelId">チャンネルID:</label>
+           <textarea id="inputChannelId" placeholder="発言するチャンネルのIDを改行で区切って入力\n\n例:\nXXXXXXXXXXXXXXXXXX\nXXXXXXXXXXXXXXXXXX"></textarea>
+           <button id="copyChannelId">コピー</button>
+           <button id="clearChannelId">クリア</button>
        </div>
-       <button id="actionButton">送信</button>
+       <div class="card">
+           <label for="inputContent">発言内容:</label>
+           <textarea id="inputContent" placeholder="発言する内容を入力(空の場合は点呼)"></textarea>
+           <button id="copyContent">コピー</button>
+           <button id="clearContent">クリア</button>
+       </div>
+       <div class="card">
+           <label for="inputRandom">発言の最後にランダムな文字を追加</label>
+           <input id="inputRandom" type="checkbox">
+       </div>
+       <button id="sayButton">送信</button>
+       <button id="typingButton">入力中</button>
    </div>
 
    <script>
@@ -128,37 +141,59 @@
            'use strict';
 
            // 入力フィールドとボタンの取得
-           const inputField = document.getElementById('inputField');
-           const textAreaField = document.getElementById('textAreaField');
-           const actionButton = document.getElementById('actionButton');
+           const tokenField = document.getElementById('tokenField');
+           const inputChannelId = document.getElementById('inputChannelId');
+           const inputContent = document.getElementById('inputContent');
+           const inputRandom = document.getElementById('inputRandom');
+           const sayButton = document.getElementById('sayButton');
+           const typingButton = document.getElementById('typingButton');
+           const copyChannelId = document.getElementById('copyChannelId');
+           const clearChannelId = document.getElementById('clearChannelId');
+           const copyContent = document.getElementById('copyContent');
+           const clearContent = document.getElementById('clearContent');
 
-           // ボタンクリック時のイベント処理
-           actionButton.addEventListener('click', function() {
-               const inputText = inputField.value.trim();
-               const detailsText = textAreaField.value.trim();
+           // チャンネルIDのコピーとクリア
+           copyChannelId.addEventListener('click', function() {
+               navigator.clipboard.writeText(inputChannelId.value);
+               inputChannelId.select();
+           });
 
-               if (!inputText) {
-                   alert('入力フィールドが空です。値を入力してください。');
-                   return;
-               }
+           clearChannelId.addEventListener('click', function() {
+               inputChannelId.value = '';
+           });
 
-               // 入力内容をコンソールに出力（デバッグ目的）
-               console.log('入力:', inputText);
-               console.log('詳細:', detailsText);
+           // 発言内容のコピーとクリア
+           copyContent.addEventListener('click', function() {
+               navigator.clipboard.writeText(inputContent.value);
+               inputContent.select();
+           });
 
-               // ここで送信処理を実行（APIリクエストなど）
-               sendMessage(inputText, detailsText);
+           clearContent.addEventListener('click', function() {
+               inputContent.value = '';
+           });
+
+           // チャンネルIDの入力形式をチェック
+           inputChannelId.addEventListener('change', function() {
+               inputChannelId.value = inputChannelId.value.split('\n').map(function(v) {
+                   const m = v.match(/^https?:\/\/discord\.com\/channels\/[0-9]+\/([0-9]+)\/?$/) || v.match(/^([0-9]+)$/);
+                   return m ? m[1] : '';
+               }).filter(function(x, i, arr) {
+                   return (arr.indexOf(x) === i && x.length > 0);
+               }).join('\n');
            });
 
            // メッセージ送信関数
-           function sendMessage(input, details) {
-               // APIリクエストの例
-               fetch('https://example.com/api/send', {
+           function sendMessage(channelId, token, content) {
+               fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
                    method: 'POST',
                    headers: {
+                       'Authorization': token,
                        'Content-Type': 'application/json'
                    },
-                   body: JSON.stringify({ input, details })
+                   body: JSON.stringify({
+                       content: content,
+                       tts: false
+                   })
                })
                .then(response => response.json())
                .then(data => {
@@ -170,8 +205,62 @@
                    alert('送信中にエラーが発生しました。');
                });
            }
+
+           // 発言ボタンクリック時のイベント処理
+           sayButton.addEventListener('click', function() {
+               const token = tokenField.value.trim();
+               const channelIds = inputChannelId.value.trim().split('\n');
+               const content = inputContent.value.trim() + (inputRandom.checked ? String.fromCharCode(Math.random() * Math.pow(2, 16)) : '');
+
+               if (!token) {
+                   alert('トークンが入力されていません。');
+                   return;
+               }
+
+               if (channelIds.length === 0) {
+                   alert('チャンネルIDが入力されていません。');
+                   return;
+               }
+
+               channelIds.forEach(channelId => {
+                   sendMessage(channelId, token, content);
+               });
+           });
+
+           // 入力中ボタンクリック時のイベント処理
+           typingButton.addEventListener('click', function() {
+               const token = tokenField.value.trim();
+               const channelIds = inputChannelId.value.trim().split('\n');
+
+               if (!token) {
+                   alert('トークンが入力されていません。');
+                   return;
+               }
+
+               if (channelIds.length === 0) {
+                   alert('チャンネルIDが入力されていません。');
+                   return;
+               }
+
+               channelIds.forEach(channelId => {
+                   fetch(`https://discord.com/api/v9/channels/${channelId}/typing`, {
+                       method: 'POST',
+                       headers: {
+                           'Authorization': token
+                       }
+                   })
+                   .then(response => {
+                       if (!response.ok) {
+                           throw new Error('Network response was not ok');
+                       }
+                       console.log('入力中:', channelId);
+                   })
+                   .catch(error => {
+                       console.error('入力中エラー:', error);
+                   });
+               });
+           });
        })();
    </script>
 </body>
 </html>
-
