@@ -311,7 +311,8 @@ function logAction(message) {
     }
 
     // 発言ボタンクリック時のイベント処理
-    sayButton.addEventListener('click', function() {
+
+    sayButton.addEventListener('click', async function() { 
         const tokens = tokenField.value.trim().split('\n');
         const channelIds = inputChannelId.value.trim().split('\n');
         const userIds = inputUserId.value.trim().split('\n');
