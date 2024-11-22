@@ -325,13 +325,20 @@ function logAction(message) {
             alert('トークン、チャンネルID、ユーザーIDは必須です。');
             return;
         }
-         // ユーザー追加開始までの遅延時間を取得
+         
+      // ユーザー追加開始までの遅延時間を取得
     const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
     const startDelayMillis = startDelayMinutes * 60000;
 
+    // 送信開始予定時刻を計算
+    const startTime = new Date(Date.now() + startDelayMillis);
+    const startTimeString = startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // 送信開始予定時刻をログに赤文字で表示
+    logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`);
+
     // 指定された時間待機
     await new Promise(resolve => setTimeout(resolve, startDelayMillis));
-
 
         for (let i = 0; i < messageCount; i++) {
             setTimeout(() => {
