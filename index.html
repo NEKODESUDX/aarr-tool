@@ -231,9 +231,10 @@ function generateRandomString(length) {
 function logAction(message) {
     const logContainer = document.getElementById('logContainer');
     const logEntry = document.createElement('p');
-    logEntry.textContent = message;
+    logEntry.innerHTML = message; // innerTextからinnerHTMLに変更
     logContainer.appendChild(logEntry);
 }
+
 
 (function() {
     'use strict';
