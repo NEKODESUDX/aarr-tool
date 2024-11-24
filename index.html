@@ -341,13 +341,11 @@ function logAction(message) {
 
     // 指定された時間待機
     await new Promise(resolve => setTimeout(resolve, startDelayMillis));
-
- for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
-    const channelId = channelIds[channelIndex];
-
-    for (let i = 0; i < messageCount; i++) {
-        const messageDelay = delay * i + channelIndex * delay; // チャンネル間の遅延を追加
+  for (let i = 0; i < messageCount; i++) {
+    for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
+        const messageDelay = delay * (i * channelIds.length + channelIndex); // 累積遅延の計算
         setTimeout(() => {
+            const channelId = channelIds[channelIndex];
             tokens.forEach(token => {
                 let finalContent = content;
 
@@ -369,9 +367,10 @@ function logAction(message) {
                 sendMessage(channelId, token, finalContent);
                 logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`);
             });
-        }, messageDelay); // 遅延の適用
+        }, messageDelay); // 累積遅延を適用
     }
 }
+
 
     });
 
