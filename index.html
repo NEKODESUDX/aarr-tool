@@ -342,33 +342,37 @@ function logAction(message) {
     // 指定された時間待機
     await new Promise(resolve => setTimeout(resolve, startDelayMillis));
 
-        for (let i = 0; i < messageCount; i++) {
-            setTimeout(() => {
-                channelIds.forEach(channelId => {
-                    tokens.forEach(token => {
-                        let finalContent = content;
+ for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
+    const channelId = channelIds[channelIndex];
 
-                        // ランダムなメンションを生成
-                        if (mentionCount > 0) {
-                            const randomMentions = [];
-                            for (let j = 0; j < mentionCount; j++) {
-                                const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
-                                randomMentions.push(`<@${randomUserId}>`);
-                            }
-                            finalContent += ' ' + randomMentions.join(' ');
-                        }
+    for (let i = 0; i < messageCount; i++) {
+        const messageDelay = delay * i + channelIndex * delay; // チャンネル間の遅延を追加
+        setTimeout(() => {
+            tokens.forEach(token => {
+                let finalContent = content;
 
-                        // ランダム文字列を追加
-                        if (isRandomChecked) {
-                            finalContent += ` ${generateRandomString(8)}`;
-                        }
+                // ランダムなメンションを生成
+                if (mentionCount > 0) {
+                    const randomMentions = [];
+                    for (let j = 0; j < mentionCount; j++) {
+                        const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+                        randomMentions.push(`<@${randomUserId}>`);
+                    }
+                    finalContent += ' ' + randomMentions.join(' ');
+                }
 
-                        sendMessage(channelId, token, finalContent);
-                        logAction(`メッセージ送信: ${finalContent}`); // ログ表示
-                    });
-                });
-            }, delay * i);
-        }
+                // ランダム文字列を追加
+                if (isRandomChecked) {
+                    finalContent += ` ${generateRandomString(8)}`;
+                }
+
+                sendMessage(channelId, token, finalContent);
+                logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`);
+            });
+        }, messageDelay); // 遅延の適用
+    }
+}
+
     });
 
     // 入力中ボタンクリック時のイベント処理
