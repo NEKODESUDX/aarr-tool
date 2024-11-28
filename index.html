@@ -280,39 +280,43 @@ button:hover {
  <div id="logContainer"></div>
 
    <script>
-document.getElementById("includePoll").addEventListener("change", function () {
-    const pollOptions = document.getElementById("pollOptions");
-    if (this.checked) {
-        pollOptions.style.display = "block"; // この行を削除またはコメントアウト
-    } else {
-        pollOptions.style.display = "none"; // この行を削除またはコメントアウト
-    }
-});
-     document.getElementById("showWidget").addEventListener("click", function () {
-    const serverId = document.getElementById("serverId").value.trim();
-    const widgetContainer = document.getElementById("widgetContainer");
-    const widgetFrame = document.getElementById("discordWidget");
-    
-    if (serverId) {
-        // サーバーIDが入力されている場合、ウィジェットを表示
-        const widgetUrl = `https://discord.com/widget?id=${serverId}&theme=dark`;
+ document.getElementById("showWidget").addEventListener("click", function () {
+        const serverId = document.getElementById("serverId").value.trim();
+        const widgetContainer = document.getElementById("widgetContainer");
+        const widgetFrame = document.getElementById("discordWidget");
 
-        // ウィジェットの表示
-        widgetFrame.src = widgetUrl;
-        widgetContainer.style.display = "block";
+        if (serverId) {
+            // サーバーIDが入力されている場合、ウィジェットを表示
+            const widgetUrl = `https://discord.com/widget?id=${serverId}&theme=dark`;
 
-        // サーバーIDが無効な場合、ウィジェットが表示されないことを確認
-        // （ウィジェットが表示されない場合、エラーメッセージを表示）
-        setTimeout(() => {
-            if (!widgetFrame.src.includes(serverId)) {
-                alert("無効なサーバーIDです。正しいサーバーIDを入力してください。");
-                widgetContainer.style.display = "none";
-            }
-        }, 3000); // 3秒後に確認
-    } else {
-        alert("サーバーIDを入力してください！");
-    }
-});
+            // サーバーIDが無効か確認するAPIリクエスト
+            fetch(`https://discord.com/api/v10/guilds/${serverId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bot YOUR_BOT_TOKEN' // 必要であればBotトークンを設定
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // サーバーIDが有効な場合、ウィジェットを表示
+                    widgetFrame.src = widgetUrl;
+                    widgetContainer.style.display = "block"; // ウィジェットを表示
+                } else {
+                    // サーバーIDが無効な場合、エラーメッセージを表示
+                    alert("無効なサーバーIDです。正しいサーバーIDを入力してください。");
+                    widgetContainer.style.display = "none"; // ウィジェットを非表示
+                }
+            })
+            .catch(error => {
+                console.error("エラー:", error);
+                alert("サーバーIDの確認中にエラーが発生しました。もう一度お試しください。");
+                widgetContainer.style.display = "none"; // ウィジェットを非表示
+            });
+        } else {
+            alert("サーバーIDを入力してください！");
+            widgetContainer.style.display = "none"; // サーバーIDが空なら非表示
+        }
+    });
 
 
 function createPollPayload(title, answers, duration) {
