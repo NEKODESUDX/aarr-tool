@@ -205,22 +205,22 @@ button:hover {
            <label for="tokenField">トークン:</label>
            <textarea id="tokenField" placeholder="ユーザートークンを改行で区切って入力してください\n\n例:\nXXXXXXXXXXXXXXXXXX\nXXXXXXXXXXXXXXXXXX"></textarea>
        </div>
-         <div class="card">
-            <label for="serverId">サーバーID:</label>
-            <input type="text" id="serverId" placeholder="DiscordサーバーIDを入力">
-            <button id="showWidget">IDからウィジェットを表示</button>
-        </div>
+       <div class="card">
+    <label for="serverId">サーバーID:</label>
+    <input type="text" id="serverId" placeholder="DiscordサーバーIDを入力">
+    <button id="showWidget">IDからウィジェットを表示</button>
+</div>
 
-        <div class="card" id="widgetContainer" style="margin-top: 20px; display: none;">
-            <h3>サーバーウィジェット</h3>
-            <iframe id="discordWidget" 
-                    width="350" 
-                    height="500" 
-                    allowtransparency="true" 
-                    frameborder="0" 
-                    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
-            </iframe>
-        </div>
+<div class="card" id="widgetContainer" style="margin-top: 20px; display: none;">
+    <h3>サーバーウィジェット</h3>
+    <iframe id="discordWidget" 
+            width="350" 
+            height="500" 
+            allowtransparency="true" 
+            frameborder="0" 
+            sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+    </iframe>
+</div>
 
        <div class="card">
            <label for="inputChannelId">チャンネルID:</label>
@@ -317,16 +317,22 @@ window.onload = function() {
 };
 
 
-      
- document.getElementById("showWidget").addEventListener("click", function (){ 
-        const serverId = document.getElementById("serverId").value.trim();
+ document.getElementById("showWidget").addEventListener("click", function () {
+        const serverId = document.getElementById("serverId").value.trim(); // サーバーIDを取得
         const widgetContainer = document.getElementById("widgetContainer");
         const widgetFrame = document.getElementById("discordWidget");
-
+        
         if (serverId) {
             // サーバーIDが入力されている場合、ウィジェットを表示
             const widgetUrl = `https://discord.com/widget?id=${serverId}&theme=dark`;
 
+            // iframeのsrc属性にサーバーIDを基にしたURLを設定
+            widgetFrame.src = widgetUrl;
+
+            // ウィジェットコンテナを表示
+            widgetContainer.style.display = "block";
+        } else {
+            alert("サーバーIDを入力してください！");
         }
     });
 
