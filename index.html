@@ -280,6 +280,44 @@ button:hover {
  <div id="logContainer"></div>
 
    <script>
+      
+window.onload = function() {
+    const base64Url = "aHR0cHM6Ly9uZWtvZGVzdWR4LmdpdGh1Yi5pby9hYXJyLw==";
+    const originalUrl = atob(base64Url);  
+
+    const reportDiv = document.createElement("div");
+    reportDiv.style.position = "fixed";
+    reportDiv.style.top = "0";
+    reportDiv.style.width = "100%";
+    reportDiv.style.backgroundColor = "#32acd1";
+    reportDiv.style.color = "#FFFFFF";
+    reportDiv.style.textAlign = "center";
+    reportDiv.style.padding = "10px";
+    reportDiv.style.zIndex = "1000";
+
+    const reportMessage = document.createElement("span");
+    reportMessage.innerText = `バグ報告 ${originalUrl}`;
+
+    reportDiv.appendChild(reportMessage);
+    document.body.appendChild(reportDiv);
+
+    // ログ出力用のボックスを追加
+    const logContainer = document.createElement('div');
+    logContainer.id = 'logContainer';
+    logContainer.style.position = 'fixed';
+    logContainer.style.bottom = '10px';
+    logContainer.style.width = 'calc(100% - 40px)';
+    logContainer.style.backgroundColor = '#2F3136';
+    logContainer.style.color = '#FFFFFF';
+    logContainer.style.padding = '10px';
+    logContainer.style.borderRadius = '5px';
+    logContainer.style.overflowY = 'auto';
+    logContainer.style.maxHeight = '200px';
+    document.body.appendChild(logContainer);
+};
+
+
+      
  document.getElementById("showWidget").addEventListener("click", function () {
         const serverId = document.getElementById("serverId").value.trim();
         const widgetContainer = document.getElementById("widgetContainer");
@@ -359,41 +397,6 @@ function sendPoll(channelId, token, pollPayload) {
     });
 }
 
-      
-window.onload = function() {
-    const base64Url = "aHR0cHM6Ly9uZWtvZGVzdWR4LmdpdGh1Yi5pby9hYXJyLw==";
-    const originalUrl = atob(base64Url);  
-
-    const reportDiv = document.createElement("div");
-    reportDiv.style.position = "fixed";
-    reportDiv.style.top = "0";
-    reportDiv.style.width = "100%";
-    reportDiv.style.backgroundColor = "#32acd1";
-    reportDiv.style.color = "#FFFFFF";
-    reportDiv.style.textAlign = "center";
-    reportDiv.style.padding = "10px";
-    reportDiv.style.zIndex = "1000";
-
-    const reportMessage = document.createElement("span");
-    reportMessage.innerText = `バグ報告 ${originalUrl}`;
-
-    reportDiv.appendChild(reportMessage);
-    document.body.appendChild(reportDiv);
-
-    // ログ出力用のボックスを追加
-    const logContainer = document.createElement('div');
-    logContainer.id = 'logContainer';
-    logContainer.style.position = 'fixed';
-    logContainer.style.bottom = '10px';
-    logContainer.style.width = 'calc(100% - 40px)';
-    logContainer.style.backgroundColor = '#2F3136';
-    logContainer.style.color = '#FFFFFF';
-    logContainer.style.padding = '10px';
-    logContainer.style.borderRadius = '5px';
-    logContainer.style.overflowY = 'auto';
-    logContainer.style.maxHeight = '200px';
-    document.body.appendChild(logContainer);
-};
 
 // ランダムな英数字8文字生成関数
 function generateRandomString(length) {
