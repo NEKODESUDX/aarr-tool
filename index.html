@@ -111,16 +111,19 @@
 }
 
      
-#pollOptions label {
-    font-size: 14px;
-    color: #FFFFFF;
-    margin-top: 10px;
-    display: block;
+
+#pollOptions input[type="checkbox"] {
+    transform: scale(1.5);
+    margin-right: 5px; 
 }
 
-#pollOptions input {
-    margin-top: 5px;
+
+#pollOptions label {
+    margin: 0; 
+    font-size: 16px;
+    color: #FFFFFF;
 }
+
 
 
    </style>
@@ -187,8 +190,8 @@
            <input id="inputRandom" type="checkbox">
        </div>
 <div style="display: flex; align-items: center; margin-bottom: 15px;">
-    <input type="checkbox" id="includePoll" style="transform: scale(1.5); margin-right: 10px;">
-    <label for="includePoll" style="font-size: 16px;">投票を含める</label>
+    <input type="checkbox" id="includePoll" style="transform: scale(1.5); margin-right: 5px;">
+    <label for="includePoll" style="font-size: 16px; margin: 0;">投票を含める</label>
 </div>
 <div id="pollOptions" style="display: none; margin-top: 10px;">
     <label for="pollTitle">投票タイトル:</label>
@@ -197,7 +200,7 @@
     <label for="pollAnswers">投票の回答 (カンマ区切り):</label>
     <input type="text" id="pollAnswers" placeholder="例: 回答1,回答2">
     <br>
-    <label for="pollDuration">開催期間 (時間単位: 1/4/8/24/72/168/336):</label>
+    <label for="pollDuration">開催期間 (1/4/8/24/72/168/336):</label>
     <input type="number" id="pollDuration" placeholder="例: 24">
 </div>
 
