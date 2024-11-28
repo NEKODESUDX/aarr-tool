@@ -110,16 +110,27 @@
     margin-top: 20px;
 }
 
-     
+
+.poll-input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    background-color: #40444B;
+    color: #FFFFFF;
+    font-size: 14px;
+}
+
 
 #pollOptions input[type="checkbox"] {
     transform: scale(1.5);
-    margin-right: 5px; 
+    margin-right: 5px;
 }
 
 
 #pollOptions label {
-    margin: 0; 
+    margin: 0;
     font-size: 16px;
     color: #FFFFFF;
 }
@@ -189,22 +200,22 @@
            <label for="inputRandom">発言の最後にランダムな文字を追加</label>
            <input id="inputRandom" type="checkbox">
        </div>
-<div style="display: flex; align-items: center; margin-bottom: 15px;">
-    <input type="checkbox" id="includePoll" style="transform: scale(1.5); margin-right: 5px;">
-    <label for="includePoll" style="font-size: 16px; margin: 0;">投票を含める</label>
+<div class="card">
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <input type="checkbox" id="includePoll" style="transform: scale(1.5); margin-right: 5px;">
+        <label for="includePoll" style="font-size: 16px; margin: 0;">投票を含める</label>
+    </div>
+    <div id="pollOptions" style="display: none; margin-top: 10px;">
+        <label for="pollTitle">投票タイトル:</label>
+        <input type="text" id="pollTitle" placeholder="投票のタイトルを入力" class="poll-input">
+        <br>
+        <label for="pollAnswers">投票の回答 (カンマ区切り):</label>
+        <input type="text" id="pollAnswers" placeholder="例: 回答1,回答2" class="poll-input">
+        <br>
+        <label for="pollDuration">開催期間 (1/4/8/24/72/168/336):</label>
+        <input type="number" id="pollDuration" placeholder="例: 24" class="poll-input">
+    </div>
 </div>
-<div id="pollOptions" style="display: none; margin-top: 10px;">
-    <label for="pollTitle">投票タイトル:</label>
-    <input type="text" id="pollTitle" placeholder="投票のタイトルを入力">
-    <br>
-    <label for="pollAnswers">投票の回答 (カンマ区切り):</label>
-    <input type="text" id="pollAnswers" placeholder="例: 回答1,回答2">
-    <br>
-    <label for="pollDuration">開催期間 (1/4/8/24/72/168/336):</label>
-    <input type="number" id="pollDuration" placeholder="例: 24">
-</div>
-
-
 <label for="startDelay">送信開始までの時間 (分後):</label>
 <input type="number" id="startDelay" name="startDelay" value="0" min="0">
        <button id="sayButton">送信</button>
