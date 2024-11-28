@@ -205,21 +205,22 @@ button:hover {
            <label for="tokenField">トークン:</label>
            <textarea id="tokenField" placeholder="ユーザートークンを改行で区切って入力してください\n\n例:\nXXXXXXXXXXXXXXXXXX\nXXXXXXXXXXXXXXXXXX"></textarea>
        </div>
-   <div class="card">
-    <label for="serverId">サーバーID:</label>
-    <input type="text" id="serverId" placeholder="DiscordサーバーIDを入力">
-    <button id="showWidget">IDからウィジェットを表示</button>
-</div>
-<div class="card" id="widgetContainer" style="margin-top: 20px; display: none;">
-    <h3>サーバーウィジェット</h3>
-    <iframe id="discordWidget" 
-            width="350" 
-            height="500" 
-            allowtransparency="true" 
-            frameborder="0" 
-            sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
-    </iframe>
-</div>
+         <div class="card">
+            <label for="serverId">サーバーID:</label>
+            <input type="text" id="serverId" placeholder="DiscordサーバーIDを入力">
+            <button id="showWidget">IDからウィジェットを表示</button>
+        </div>
+
+        <div class="card" id="widgetContainer" style="margin-top: 20px; display: none;">
+            <h3>サーバーウィジェット</h3>
+            <iframe id="discordWidget" 
+                    width="350" 
+                    height="500" 
+                    allowtransparency="true" 
+                    frameborder="0" 
+                    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+            </iframe>
+        </div>
 
        <div class="card">
            <label for="inputChannelId">チャンネルID:</label>
@@ -287,25 +288,40 @@ document.getElementById("includePoll").addEventListener("change", function () {
         pollOptions.style.display = "none"; // この行を削除またはコメントアウト
     }
 });
-document.getElementById("showWidget").addEventListener("click", function () {
-    const serverId = document.getElementById("serverId").value.trim();
-    const widgetContainer = document.getElementById("widgetContainer");
-    const widgetFrame = document.getElementById("discordWidget");
-
-    if (serverId) {
-        // ウィジェットのURLを更新
-        widgetFrame.src = `https://discord.com/widget?id=${serverId}&theme=dark`;
-        widgetContainer.style.display = "block";
-
-        // 4分ごとに更新
-        setInterval(() => {
-            widgetFrame.src = `https://discord.com/widget?id=${serverId}&theme=dark&timestamp=${new Date().getTime()}`;
-        }, 4 * 60 * 1000); // 4分 (4分 * 60秒 * 1000ミリ秒)
-    } else {
-        alert("サーバーIDを入力してください！");
-    }
-});
-
+       document.getElementById("showWidget").addEventListener("click", function () {
+                const serverId = document.getElementById("serverId").value.trim();
+                const widgetContainer = document.getElementById("widgetContainer");
+                const widgetFrame = document.getElementById("discordWidget");
+                
+                if (serverId) {
+                    // サーバーIDが入力されている場合、ウィジェットを表示
+                    const widgetUrl = `https://discord.com/widget?id=${serverId}&theme=dark`;
+                    
+                    // サーバーIDが無効か確認するAPIリクエスト
+                    fetch(`https://discord.com/api/v10/guilds/${serverId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bot YOUR_BOT_TOKEN' // トークンを設定する場合、サーバーIDを検証するために必要
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // サーバーIDが有効な場合、ウィジェットを表示
+                            widgetFrame.src = widgetUrl;
+                            widgetContainer.style.display = "block";
+                        } else {
+                            // サーバーIDが無効な場合、エラーメッセージを表示
+                            alert("無効なサーバーIDです。正しいサーバーIDを入力してください。");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("エラー:", error);
+                        alert("サーバーIDの確認中にエラーが発生しました。もう一度お試しください。");
+                    });
+                } else {
+                    alert("サーバーIDを入力してください！");
+                }
+            });
 
 function createPollPayload(title, answers, duration) {
     const pollAnswers = answers.split(',').map(answer => ({
