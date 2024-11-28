@@ -110,6 +110,19 @@
     margin-top: 20px;
 }
 
+     
+#pollOptions label {
+    font-size: 14px;
+    color: #FFFFFF;
+    margin-top: 10px;
+    display: block;
+}
+
+#pollOptions input {
+    margin-top: 5px;
+}
+
+
    </style>
 </head>
 <body>
@@ -173,10 +186,9 @@
            <label for="inputRandom">発言の最後にランダムな文字を追加</label>
            <input id="inputRandom" type="checkbox">
        </div>
-<div>
-    <label for="includePoll">
-        <input type="checkbox" id="includePoll"> 投票を含める
-    </label>
+<div style="display: flex; align-items: center; margin-bottom: 15px;">
+    <input type="checkbox" id="includePoll" style="transform: scale(1.5); margin-right: 10px;">
+    <label for="includePoll" style="font-size: 16px;">投票を含める</label>
 </div>
 <div id="pollOptions" style="display: none; margin-top: 10px;">
     <label for="pollTitle">投票タイトル:</label>
@@ -188,6 +200,7 @@
     <label for="pollDuration">開催期間 (時間単位: 1/4/8/24/72/168/336):</label>
     <input type="number" id="pollDuration" placeholder="例: 24">
 </div>
+
 
 <label for="startDelay">送信開始までの時間 (分後):</label>
 <input type="number" id="startDelay" name="startDelay" value="0" min="0">
