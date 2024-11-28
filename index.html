@@ -318,7 +318,7 @@ window.onload = function() {
 
 
       
- document.getElementById("showWidget").addEventListener("click", function () {
+ document.getElementById("showWidget").addEventListener("click", function (){ 
         const serverId = document.getElementById("serverId").value.trim();
         const widgetContainer = document.getElementById("widgetContainer");
         const widgetFrame = document.getElementById("discordWidget");
@@ -327,34 +327,9 @@ window.onload = function() {
             // サーバーIDが入力されている場合、ウィジェットを表示
             const widgetUrl = `https://discord.com/widget?id=${serverId}&theme=dark`;
 
-            // サーバーIDが無効か確認するAPIリクエスト
-            fetch(`https://discord.com/api/v10/guilds/${serverId}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bot YOUR_BOT_TOKEN' // 必要であればBotトークンを設定
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    // サーバーIDが有効な場合、ウィジェットを表示
-                    widgetFrame.src = widgetUrl;
-                    widgetContainer.style.display = "block"; // ウィジェットを表示
-                } else {
-                    // サーバーIDが無効な場合、エラーメッセージを表示
-                    alert("無効なサーバーIDです。正しいサーバーIDを入力してください。");
-                    widgetContainer.style.display = "none"; // ウィジェットを非表示
-                }
-            })
-            .catch(error => {
-                console.error("エラー:", error);
-                alert("サーバーIDの確認中にエラーが発生しました。もう一度お試しください。");
-                widgetContainer.style.display = "none"; // ウィジェットを非表示
-            });
-        } else {
-            alert("サーバーIDを入力してください！");
-            widgetContainer.style.display = "none"; // サーバーIDが空なら非表示
         }
     });
+
 
 
 function createPollPayload(title, answers, duration) {
