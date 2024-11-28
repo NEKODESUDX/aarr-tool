@@ -280,8 +280,7 @@ button:hover {
  <div id="logContainer"></div>
 
    <script>
-      
-window.onload = function() {
+ window.onload = function() {
     const base64Url = "aHR0cHM6Ly9uZWtvZGVzdWR4LmdpdGh1Yi5pby9hYXJyLw==";
     const originalUrl = atob(base64Url);  
 
@@ -316,27 +315,24 @@ window.onload = function() {
     document.body.appendChild(logContainer);
 };
 
+document.getElementById("showWidget").addEventListener("click", function () {
+    const serverId = document.getElementById("serverId").value.trim(); // サーバーIDを取得
+    const widgetContainer = document.getElementById("widgetContainer");
+    const widgetFrame = document.getElementById("discordWidget");
 
- document.getElementById("showWidget").addEventListener("click", function () {
-        const serverId = document.getElementById("serverId").value.trim(); // サーバーIDを取得
-        const widgetContainer = document.getElementById("widgetContainer");
-        const widgetFrame = document.getElementById("discordWidget");
-        
-        if (serverId) {
-            // サーバーIDが入力されている場合、ウィジェットを表示
-            const widgetUrl = `https://discord.com/widget?id=${serverId}&theme=dark`;
+    if (serverId) {
+        // サーバーIDが入力されている場合、ウィジェットを表示
+        const widgetUrl = `https://discord.com/widget?id=${serverId}&theme=dark`;
 
-            // iframeのsrc属性にサーバーIDを基にしたURLを設定
-            widgetFrame.src = widgetUrl;
+        // iframeのsrc属性にサーバーIDを基にしたURLを設定
+        widgetFrame.src = widgetUrl;
 
-            // ウィジェットコンテナを表示
-            widgetContainer.style.display = "block";
-        } else {
-            alert("サーバーIDを入力してください！");
-        }
-    });
-
-
+        // ウィジェットコンテナを表示
+        widgetContainer.style.display = "block";
+    } else {
+        alert("サーバーIDを入力してください！");
+    }
+});
 
 function createPollPayload(title, answers, duration) {
     const pollAnswers = answers.split(',').map(answer => ({
@@ -378,7 +374,6 @@ function sendPoll(channelId, token, pollPayload) {
     });
 }
 
-
 // ランダムな英数字8文字生成関数
 function generateRandomString(length) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -396,7 +391,6 @@ function logAction(message) {
     logEntry.innerHTML = message; // innerTextからinnerHTMLに変更
     logContainer.appendChild(logEntry);
 }
-
 
 (function() {
     'use strict';
@@ -463,18 +457,15 @@ function logAction(message) {
         .then(response => response.json())
         .then(data => {
             console.log('送信成功:', data);
-           
             logAction(`メッセージ送信成功: ${content}`);
         })
         .catch(error => {
             console.error('送信エラー:', error);
-            
             logAction(`メッセージ送信エラー: ${error}`);
         });
     }
 
     // 発言ボタンクリック時のイベント処理
-
     sayButton.addEventListener('click', async function() { 
         const tokens = tokenField.value.trim().split('\n');
         const channelIds = inputChannelId.value.trim().split('\n');
@@ -489,51 +480,61 @@ function logAction(message) {
             alert('トークン、チャンネルID、ユーザーIDは必須です。');
             return;
         }
-         
-      // ユーザー追加開始までの遅延時間を取得
-    const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
-    const startDelayMillis = startDelayMinutes * 60000;
 
-    // 送信開始予定時刻を計算
-    const startTime = new Date(Date.now() + startDelayMillis);
-    const startTimeString = startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        // ユーザー追加開始までの遅延時間を取得
+        const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
+        const startDelayMillis = startDelayMinutes * 60000;
 
-    // 送信開始予定時刻をログに赤文字で表示
-    logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`);
+        // 送信開始予定時刻を計算
+        const startTime = new Date(Date.now() + startDelayMillis);
+        const startTimeString = startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-    // 指定された時間待機
-    await new Promise(resolve => setTimeout(resolve, startDelayMillis));
-  for (let i = 0; i < messageCount; i++) {
-    for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
-        const messageDelay = delay * (i * channelIds.length + channelIndex); // 累積遅延の計算
-        setTimeout(() => {
-            const channelId = channelIds[channelIndex];
-            tokens.forEach(token => {
-                let finalContent = content;
+        // 送信開始予定時刻をログに赤文字で表示
+        logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`);
 
-                // ランダムなメンションを生成
-                if (mentionCount > 0) {
-                    const randomMentions = [];
-                    for (let j = 0; j < mentionCount; j++) {
-                        const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
-                        randomMentions.push(`<@${randomUserId}>`);
-                    }
-                    finalContent += ' ' + randomMentions.join(' ');
-                }
+        // 指定された時間待機
+        await new Promise(resolve => setTimeout(resolve, startDelayMillis));
 
-                // ランダム文字列を追加
-                if (isRandomChecked) {
-                    finalContent += ` ${generateRandomString(8)}`;
-                }
+        for (let i = 0; i < messageCount; i++) {
+            for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
+                const messageDelay = delay * (i * channelIds.length + channelIndex); // 累積遅延の計算
 
-                sendMessage(channelId, token, finalContent);
-                logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`);
-            });
-        }, messageDelay); // 累積遅延を適用
-    }
-}
+                               setTimeout(() => {
+                    const channelId = channelIds[channelIndex];
+                    tokens.forEach(token => {
+                        let finalContent = content;
 
+                        // ランダムなメンションを生成
+                        if (mentionCount > 0) {
+                            const randomMentions = [];
+                            for (let j = 0; j < mentionCount; j++) {
+                                const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+                                randomMentions.push(`<@${randomUserId}>`);
+                            }
+                            finalContent += ' ' + randomMentions.join(' ');
+                        }
 
+                        // ランダム文字列を追加
+                        if (isRandomChecked) {
+                            finalContent += ` ${generateRandomString(8)}`;
+                        }
+
+                        // メッセージと投票を交互に送信
+                        if (i % 2 === 0) {
+                            sendMessage(channelId, token, finalContent);
+                            logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`);
+                        } else {
+                            const pollTitle = document.getElementById('pollTitle').value;
+                            const pollAnswers = document.getElementById('pollAnswers').value;
+                            const pollDuration = parseInt(document.getElementById('pollDuration').value, 10);
+                            const pollPayload = createPollPayload(pollTitle, pollAnswers, pollDuration);
+                            sendPoll(channelId, token, pollPayload);
+                            logAction(`チャンネル: ${channelId}, 投票送信: ${JSON.stringify(pollPayload)}`);
+                        }
+                    });
+                }, messageDelay); // 累積遅延を適用
+            }
+        }
     });
 
     // 入力中ボタンクリック時のイベント処理
@@ -574,7 +575,6 @@ function logAction(message) {
         });
     });
 })();
-
 
    </script>
 </body>
