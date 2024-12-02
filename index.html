@@ -322,7 +322,8 @@ document.getElementById("showWidget").addEventListener("click", function () {
     }
 });
 
-    const logContainer = document.createElement('div');
+  // ログ出力用のボックスを追加
+const logContainer = document.createElement('div');
 logContainer.id = 'logContainer';
 logContainer.style.position = 'fixed';
 logContainer.style.bottom = '10px';
@@ -335,9 +336,16 @@ logContainer.style.overflowY = 'auto';
 logContainer.style.maxHeight = '200px';
 document.body.appendChild(logContainer);
 
+document.getElementById("showWidget").addEventListener("click", function () {
+    const serverId = document.getElementById("serverId").value.trim(); // サーバーIDを取得
+    const widgetContainer = document.getElementById("widgetContainer");
+    const widgetFrame = document.getElementById("discordWidget");
 
-};
-
+    if (serverId) {
+        // サーバーIDが入力されている場合、ウィジェットを表示
+        const widgetUrl = `https://discord.com/widget?id=${serverId}&theme=dark`;
+    }
+});
 
 function sendPoll(channelId, token, pollPayload) {
     fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
@@ -391,9 +399,9 @@ function logAction(message) {
     const inputRandom = document.getElementById('inputRandom');
     const sayButton = document.getElementById('sayButton');
     const typingButton = document.getElementById('typingButton');
-    const autoAdjustDelayButton = document.getElementById('autoAdjustDelayButton');
+    const autoAdjustDelayCheckbox = document.getElementById('autoAdjustDelay');
 
-    let autoAdjustDelay = false;
+    let autoAdjustDelay = autoAdjustDelayCheckbox.checked;
     let delay = parseInt(delayField.value, 10); // 初期遅延を取得
 
     // チャンネルIDのコピーとクリア
@@ -430,14 +438,6 @@ function logAction(message) {
         }).join('\n');
     });
 
-    (function() {
-    'use strict';
-
-    // 入力フィールドとボタンの取得
-    const autoAdjustDelayCheckbox = document.getElementById('autoAdjustDelay');
-    let autoAdjustDelay = autoAdjustDelayCheckbox.checked;
-    let delay = parseInt(delayField.value, 10); // 初期遅延を取得
-
     // チェックボックス変更イベント
     autoAdjustDelayCheckbox.addEventListener('change', function() {
         autoAdjustDelay = autoAdjustDelayCheckbox.checked;
@@ -458,11 +458,6 @@ function logAction(message) {
             }
         }, 30000); // 30秒ごと
     }
-
-    // メッセージ送信関数の続き...
-
-    // 他のイベントリスナーや機能...
-})();
 
     // メッセージ送信関数
     function sendMessage(channelId, token, content) {
@@ -534,42 +529,44 @@ function logAction(message) {
             for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
                 const token = tokens[tokenIndex];
 
-                                // トークン間の遅延を適用
+                // トークン間の遅延を適用
                 await new Promise(resolve => setTimeout(resolve, delay));
 
                 for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
-                    const channelId = channelIds[channelIndex];
+                         const channelId = channelIds[channelIndex];
 
-                    let finalContent = content;
+                let finalContent = content;
 
-                    // ランダムなメンションを生成
-                    if (mentionCount > 0) {
-                        const randomMentions = [];
-                        for (let j = 0; j < mentionCount; j++) {
-                            const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
-                            randomMentions.push(`<@${randomUserId}>`);
-                        }
-                        finalContent += ' ' + randomMentions.join(' ');
+                // ランダムなメンションを生成
+                if (mentionCount > 0) {
+                    const randomMentions = [];
+                    for (let j = 0; j < mentionCount; j++) {
+                        const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+                        randomMentions.push(`<@${randomUserId}>`);
                     }
-
-                    // ランダム文字列を追加
-                    if (isRandomChecked) {
-                        finalContent += ` ${generateRandomString(8)}`;
-                    }
-
-                    // メッセージと投票を交互に送信
-                    if (i % 2 === 0) {
-                        sendMessage(channelId, token, finalContent);
-                        logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`);
-                    } else {
-                        const pollTitle = document.getElementById('pollTitle').value;
-                        const pollAnswers = document.getElementById('pollAnswers').value;
-                        const pollDuration = parseInt(document.getElementById('pollDuration').value, 10);
-                        const pollPayload = createPollPayload(pollTitle, pollAnswers, pollDuration);
-                        sendPoll(channelId, token, pollPayload);
-                        logAction(`チャンネル: ${channelId}, 投票送信: ${JSON.stringify(pollPayload)}`);
-                    }
+                    finalContent += ' ' + randomMentions.join(' ');
                 }
+
+                // ランダム文字列を追加
+                if (isRandomChecked) {
+                    finalContent += ` ${generateRandomString(8)}`;
+                }
+
+                // メッセージと投票を交互に送信
+                if (i % 2 === 0) {
+                    sendMessage(channelId, token, finalContent);
+                    logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`);
+                } else {
+                    const pollTitle = document.getElementById('pollTitle').value;
+                    const pollAnswers = document.getElementById('pollAnswers').value;
+                    const pollDuration = parseInt(document.getElementById('pollDuration').value, 10);
+                    const pollPayload = createPollPayload(pollTitle, pollAnswers, pollDuration);
+                    sendPoll(channelId, token, pollPayload);
+                    logAction(`チャンネル: ${channelId}, 投票送信: ${JSON.stringify(pollPayload)}`);
+                }
+
+                // チャンネル間の遅延を適用
+                await new Promise(resolve => setTimeout(resolve, delay));
             }
         }
     });
