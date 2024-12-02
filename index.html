@@ -269,7 +269,7 @@ button:hover {
         <input type="number" id="pollDuration" placeholder="例: 24" class="poll-input">
     </div>
 </div>
-<button id="autoAdjustDelayButton">Toggle Auto-Adjust Delay</button><br><br>
+<input type="checkbox" id="autoAdjustDelay"><br><br>
 </div>
 <label for="startDelay">送信開始までの時間 (分後):</label>
 <input type="number" id="startDelay" name="startDelay" value="0" min="0">
@@ -427,11 +427,19 @@ function logAction(message) {
         }).join('\n');
     });
 
-    // 自動遅延調節ボタンのトグル
-    autoAdjustDelayButton.addEventListener('click', function() {
-        autoAdjustDelay = !autoAdjustDelay;
+    (function() {
+    'use strict';
+
+    // 入力フィールドとボタンの取得
+    const autoAdjustDelayCheckbox = document.getElementById('autoAdjustDelay');
+    let autoAdjustDelay = autoAdjustDelayCheckbox.checked;
+    let delay = parseInt(delayField.value, 10); // 初期遅延を取得
+
+    // チェックボックス変更イベント
+    autoAdjustDelayCheckbox.addEventListener('change', function() {
+        autoAdjustDelay = autoAdjustDelayCheckbox.checked;
         logAction(`自動遅延調節モード: ${autoAdjustDelay ? 'ON' : 'OFF'}`);
-    
+
         if (autoAdjustDelay) {
             startAutoAdjustDelay();
         }
@@ -447,6 +455,11 @@ function logAction(message) {
             }
         }, 30000); // 30秒ごと
     }
+
+    // メッセージ送信関数の続き...
+
+    // 他のイベントリスナーや機能...
+})();
 
     // メッセージ送信関数
     function sendMessage(channelId, token, content) {
