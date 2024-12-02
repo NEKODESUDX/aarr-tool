@@ -299,22 +299,7 @@ button:hover {
 
     reportDiv.appendChild(reportMessage);
     document.body.appendChild(reportDiv);
-
-    // ログ出力用のボックスを追加
-    const logContainer = document.createElement('div');
-    logContainer.id = 'logContainer';
-    logContainer.style.position = 'fixed';
-    logContainer.style.bottom = '10px';
-    logContainer.style.width = 'calc(100% - 40px)';
-    logContainer.style.backgroundColor = '#2F3136';
-    logContainer.style.color = '#FFFFFF';
-    logContainer.style.padding = '10px';
-    logContainer.style.borderRadius = '5px';
-    logContainer.style.overflowY = 'auto';
-    logContainer.style.maxHeight = '200px';
-    document.body.appendChild(logContainer);
-};
-
+    
 document.getElementById("showWidget").addEventListener("click", function () {
     const serverId = document.getElementById("serverId").value.trim(); // サーバーIDを取得
     const widgetContainer = document.getElementById("widgetContainer");
@@ -334,25 +319,22 @@ document.getElementById("showWidget").addEventListener("click", function () {
     }
 });
 
-function createPollPayload(title, answers, duration) {
-    const pollAnswers = answers.split(',').map(answer => ({
-        poll_media: { text: answer.trim() }
-    }));
-    return {
-        mobile_network_type: "unknown",
-        content: "",
-        nonce: generateRandomString(18),
-        tts: false,
-        flags: 0,
-        poll: {
-            question: { text: title },
-            answers: pollAnswers,
-            allow_multiselect: false,
-            duration: duration,
-            layout_type: 1
-        }
-    };
-}
+    const logContainer = document.createElement('div');
+logContainer.id = 'logContainer';
+logContainer.style.position = 'fixed';
+logContainer.style.bottom = '10px';
+logContainer.style.width = 'calc(100% - 40px)';
+logContainer.style.backgroundColor = '#2F3136';
+logContainer.style.color = '#FFFFFF';
+logContainer.style.padding = '10px';
+logContainer.style.borderRadius = '5px';
+logContainer.style.overflowY = 'auto';
+logContainer.style.maxHeight = '200px';
+document.body.appendChild(logContainer);
+
+
+};
+
 
 function sendPoll(channelId, token, pollPayload) {
     fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
@@ -406,6 +388,10 @@ function logAction(message) {
     const inputRandom = document.getElementById('inputRandom');
     const sayButton = document.getElementById('sayButton');
     const typingButton = document.getElementById('typingButton');
+    const autoAdjustDelayButton = document.getElementById('autoAdjustDelayButton');
+
+    let autoAdjustDelay = false;
+    let delay = parseInt(delayField.value, 10); // 初期遅延を取得
 
     // チャンネルIDのコピーとクリア
     const copyChannelId = document.getElementById('copyChannelId');
@@ -441,6 +427,27 @@ function logAction(message) {
         }).join('\n');
     });
 
+    // 自動遅延調節ボタンのトグル
+    autoAdjustDelayButton.addEventListener('click', function() {
+        autoAdjustDelay = !autoAdjustDelay;
+        logAction(`自動遅延調節モード: ${autoAdjustDelay ? 'ON' : 'OFF'}`);
+    
+        if (autoAdjustDelay) {
+            startAutoAdjustDelay();
+        }
+    });
+
+    // 遅延を自動調節する関数
+    function startAutoAdjustDelay() {
+        setInterval(() => {
+            if (autoAdjustDelay) {
+                delay = Math.max(0, delay - 100); // 遅延を0.1秒減らす
+                delayField.value = delay;
+                logAction(`遅延を自動的に0.1秒減少: 現在の遅延 ${delay}ms`);
+            }
+        }, 30000); // 30秒ごと
+    }
+
     // メッセージ送信関数
     function sendMessage(channelId, token, content) {
         fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
@@ -454,7 +461,19 @@ function logAction(message) {
                 tts: false
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                if (response.status === 429) {
+                    // レートリミットエラーの場合
+                    delay += 100; // 0.1秒追加
+                    delayField.value = delay;
+                    logAction(`429エラー検出: 遅延を0.1秒増加: 現在の遅延 ${delay}ms`);
+                }
+                throw new Error('Network response was not ok');
+            }
+        })
         .then(data => {
             console.log('送信成功:', data);
             logAction(`メッセージ送信成功: ${content}`);
@@ -472,7 +491,7 @@ function logAction(message) {
         const userIds = inputUserId.value.trim().split('\n');
         const content = inputContent.value.trim();
         const messageCount = parseInt(messageCountField.value, 10);
-        const delay = parseInt(delayField.value, 10);
+        delay = parseInt(delayField.value, 10);
         const mentionCount = parseInt(mentionCountField.value, 10);
         const isRandomChecked = inputRandom.checked;
 
@@ -496,43 +515,45 @@ function logAction(message) {
         await new Promise(resolve => setTimeout(resolve, startDelayMillis));
 
         for (let i = 0; i < messageCount; i++) {
-            for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
-                const messageDelay = delay * (i * channelIds.length + channelIndex); // 累積遅延の計算
+            for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
+                const token = tokens[tokenIndex];
 
-                               setTimeout(() => {
+                                // トークン間の遅延を適用
+                await new Promise(resolve => setTimeout(resolve, delay));
+
+                for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
                     const channelId = channelIds[channelIndex];
-                    tokens.forEach(token => {
-                        let finalContent = content;
 
-                        // ランダムなメンションを生成
-                        if (mentionCount > 0) {
-                            const randomMentions = [];
-                            for (let j = 0; j < mentionCount; j++) {
-                                const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
-                                randomMentions.push(`<@${randomUserId}>`);
-                            }
-                            finalContent += ' ' + randomMentions.join(' ');
-                        }
+                    let finalContent = content;
 
-                        // ランダム文字列を追加
-                        if (isRandomChecked) {
-                            finalContent += ` ${generateRandomString(8)}`;
+                    // ランダムなメンションを生成
+                    if (mentionCount > 0) {
+                        const randomMentions = [];
+                        for (let j = 0; j < mentionCount; j++) {
+                            const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+                            randomMentions.push(`<@${randomUserId}>`);
                         }
+                        finalContent += ' ' + randomMentions.join(' ');
+                    }
 
-                        // メッセージと投票を交互に送信
-                        if (i % 2 === 0) {
-                            sendMessage(channelId, token, finalContent);
-                            logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`);
-                        } else {
-                            const pollTitle = document.getElementById('pollTitle').value;
-                            const pollAnswers = document.getElementById('pollAnswers').value;
-                            const pollDuration = parseInt(document.getElementById('pollDuration').value, 10);
-                            const pollPayload = createPollPayload(pollTitle, pollAnswers, pollDuration);
-                            sendPoll(channelId, token, pollPayload);
-                            logAction(`チャンネル: ${channelId}, 投票送信: ${JSON.stringify(pollPayload)}`);
-                        }
-                    });
-                }, messageDelay); // 累積遅延を適用
+                    // ランダム文字列を追加
+                    if (isRandomChecked) {
+                        finalContent += ` ${generateRandomString(8)}`;
+                    }
+
+                    // メッセージと投票を交互に送信
+                    if (i % 2 === 0) {
+                        sendMessage(channelId, token, finalContent);
+                        logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`);
+                    } else {
+                        const pollTitle = document.getElementById('pollTitle').value;
+                        const pollAnswers = document.getElementById('pollAnswers').value;
+                        const pollDuration = parseInt(document.getElementById('pollDuration').value, 10);
+                        const pollPayload = createPollPayload(pollTitle, pollAnswers, pollDuration);
+                        sendPoll(channelId, token, pollPayload);
+                        logAction(`チャンネル: ${channelId}, 投票送信: ${JSON.stringify(pollPayload)}`);
+                    }
+                }
             }
         }
     });
@@ -576,6 +597,7 @@ function logAction(message) {
     });
 })();
 
+                
    </script>
 </body>
 </html>
