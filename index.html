@@ -459,8 +459,67 @@ function logAction(message) {
         });
     }
 
-    // 発言ボタンクリック時のイベント処理
-    sayButton.addEventListener('click', async function() {
+   
+    // 自動遅延調整モードのチェックボックス
+    const autoDelayCheckbox = document.getElementById('autoDelayCheckbox');
+    let delayAdjustment = 0.0; // 遅延の初期値
+    let lastDelayChangeTime = Date.now();
+
+    // 遅延表示の更新
+    function updateDelayStatus() {
+        document.getElementById('delayStatus').innerText = `遅延: ${delayAdjustment.toFixed(1)}秒`;
+    }
+
+    // 遅延の自動調整
+    function adjustDelayBasedOnError(errorCount) {
+        if (autoDelayCheckbox.checked && errorCount > 0) {
+            delayAdjustment += 0.1 * errorCount;  // 429エラーの回数に応じて遅延を増加
+            updateDelayStatus();
+        }
+    }
+
+    function decreaseDelayEvery30Seconds() {
+        if (autoDelayCheckbox.checked && Date.now() - lastDelayChangeTime >= 30000) {
+            if (delayAdjustment > 0) {
+                delayAdjustment -= 0.1;  // 30秒ごとに0.1秒減少
+                updateDelayStatus();
+            }
+            lastDelayChangeTime = Date.now();
+        }
+    }
+
+    // メッセージ送信関数に遅延調整を組み込む
+    function sendMessage(channelId, token, content) {
+        fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content: content, tts: false })
+        })
+        .then(response => {
+            if (response.status === 429) {
+                adjustDelayBasedOnError(1);  // 429エラーが発生した場合、遅延を増加
+                return response.json(); // 再試行のためにレスポンスを取得
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('送信成功:', data);
+            logAction(`メッセージ送信成功: ${content}`);
+        })
+        .catch(error => {
+            console.error('送信エラー:', error);
+            logAction(`メッセージ送信エラー: ${error}`);
+        });
+    }
+
+    // 遅延調整のタイミングを監視して定期的に調整
+    setInterval(decreaseDelayEvery30Seconds, 1000); // 1秒ごとに30秒間隔で遅延を調整
+
+  // 発言ボタンクリック時のイベント処理
+    sayButton.addEventListener('click', async function () {
         const tokens = tokenField.value.trim().split('\n');
         const channelIds = inputChannelId.value.trim().split('\n');
         const userIds = inputUserId.value.trim().split('\n');
@@ -475,27 +534,14 @@ function logAction(message) {
             return;
         }
 
-        // ユーザー追加開始までの遅延時間を取得
+        // 送信開始予定時刻を計算
         const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
         const startDelayMillis = startDelayMinutes * 60000;
-
-        // 送信開始予定時刻を計算
-        const startTime = new Date(Date.now() + startDelayMillis);
-        const startTimeString = startTime.toLocaleTimeString('ja-JP', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
-
-        // 送信開始予定時刻をログに赤文字で表示
-        logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`);
-
-        // 指定された時間待機
         await new Promise(resolve => setTimeout(resolve, startDelayMillis));
 
         for (let i = 0; i < messageCount; i++) {
             for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
-                const messageDelay = delay * (i * channelIds.length + channelIndex); // 累積遅延の計算
+                const messageDelay = (delay + delayAdjustment) * (i * channelIds.length + channelIndex); // 遅延調整の計算
 
                 setTimeout(() => {
                     const channelId = channelIds[channelIndex];
@@ -514,7 +560,7 @@ function logAction(message) {
 
                         // ランダム文字列を追加
                         if (isRandomChecked) {
-                            finalContent += ` ${generateRandomString(8)}`;
+                            finalContent += `${generateRandomString(8)}`;
                         }
 
                         // メッセージと投票を交互に送信
@@ -530,10 +576,11 @@ function logAction(message) {
                             logAction(`チャンネル: ${channelId}, 投票送信: ${JSON.stringify(pollPayload)}`);
                         }
                     });
-                }, messageDelay); // 累積遅延を適用
+                }, messageDelay); // 遅延を適用
             }
         }
     });
+
 
     // 入力中ボタンクリック時のイベント処理
     typingButton.addEventListener('click', function() {
