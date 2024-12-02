@@ -10,7 +10,7 @@
    <meta property="og:description" content="メッセージ送信ツールです">
    <meta property="og:image" content="https://i.imgur.com/rApLvfn.png">
    <link rel="stylesheet" href="style.css">
-   
+
    <style>
        /* 全体のスタイル */
        body {
@@ -185,13 +185,13 @@ button:hover {
     <a href="https://nekodesudx.github.io/DM/" target="_blank">グループ追加ツール (GitHub)</a><br>
     <a href="https://nekodesudx.github.io/emoji-ja/" target="_blank">絵文字追加ツール (GitHub)</a><br>
     <a href="https://github.com/NEKODESUDX/AARR-py/tree/main" target="_blank">リアクション追加ツール (GitHub)</a><br>
-    
+
     <h2>依存環境</h2>
     <a href="https://greasyfork.org/ja/scripts/518295-discord-uid-extractor" target="_blank">全UserID取得拡張機能 [必須]</a><br>
-    
+
     <h2>Wiki</h2>
     <a href="https://github.com/hatchingchick/wiki/wiki/%E8%8D%92%E3%82%89%E3%81%97%E3%81%AE%E3%83%87%E3%83%BC%E3%82%BF%E3%83%99%E3%83%BC%E3%82%B9" target="_blank">荒らしのテクニックなど</a><br>
-    
+
     <h2>Note:</h2>
     <p>このツールはGitHub上で動作するブラウザツールであるため、joinは手動で行う必要があります。</p>
     <p>ランダムメンションの数を増やし過ぎるとAutoModに検知されやすくなります。</p>
@@ -269,10 +269,7 @@ button:hover {
         <input type="number" id="pollDuration" placeholder="例: 24" class="poll-input">
     </div>
 </div>
-    <div class="card">
-           <label for="autoAdjustDelay">自動遅延調節モード</label>
-            <input type="checkbox" id="autoAdjustDelay" style="transform: scale(1.5); margin-right: 0px;">
-       </div>
+
 </div>
 <label for="startDelay">送信開始までの時間 (分後):</label>
 <input type="number" id="startDelay" name="startDelay" value="0" min="0">
@@ -283,9 +280,9 @@ button:hover {
  <div id="logContainer"></div>
 
    <script>
- window.onload = function () {
+ window.onload = function() {
     const base64Url = "aHR0cHM6Ly9uZWtvZGVzdWR4LmdpdGh1Yi5pby9hYXJyLw==";
-    const originalUrl = atob(base64Url);
+    const originalUrl = atob(base64Url);  
 
     const reportDiv = document.createElement("div");
     reportDiv.style.position = "fixed";
@@ -302,273 +299,280 @@ button:hover {
 
     reportDiv.appendChild(reportMessage);
     document.body.appendChild(reportDiv);
+    // ログ出力用のボックスを追加
+    const logContainer = document.createElement('div');
+    logContainer.id = 'logContainer';
+    logContainer.style.position = 'fixed';
+    logContainer.style.bottom = '10px';
+    logContainer.style.width = 'calc(100% - 40px)';
+    logContainer.style.backgroundColor = '#2F3136';
+    logContainer.style.color = '#FFFFFF';
+    logContainer.style.padding = '10px';
+    logContainer.style.borderRadius = '5px';
+    logContainer.style.overflowY = 'auto';
+    logContainer.style.maxHeight = '200px';
+    document.body.appendChild(logContainer);
+};
+document.getElementById("showWidget").addEventListener("click", function () {
+    const serverId = document.getElementById("serverId").value.trim(); // サーバーIDを取得
+    const widgetContainer = document.getElementById("widgetContainer");
+    const widgetFrame = document.getElementById("discordWidget");
 
-    document.getElementById("showWidget").addEventListener("click", function () {
-        const serverId = document.getElementById("serverId").value.trim();
-        const widgetContainer = document.getElementById("widgetContainer");
-        const widgetFrame = document.getElementById("discordWidget");
+    if (serverId) {
+        // サーバーIDが入力されている場合、ウィジェットを表示
+        const widgetUrl = `https://discord.com/widget?id=${serverId}&theme=dark`;
 
-        if (serverId) {
-            const widgetUrl = `https://discord.com/widget?id=${serverId}&theme=dark`;
-            widgetFrame.src = widgetUrl;
-            widgetContainer.style.display = "block";
-        } else {
-            alert("サーバーIDを入力してください！");
+        // iframeのsrc属性にサーバーIDを基にしたURLを設定
+        widgetFrame.src = widgetUrl;
+
+        // ウィジェットコンテナを表示
+        widgetContainer.style.display = "block";
+    } else {
+        alert("サーバーIDを入力してください！");
+    }
+});
+
+function createPollPayload(title, answers, duration) {
+    const pollAnswers = answers.split(',').map(answer => ({
+        poll_media: { text: answer.trim() }
+    }));
+    return {
+        mobile_network_type: "unknown",
+        content: "",
+        nonce: generateRandomString(18),
+        tts: false,
+        flags: 0,
+        poll: {
+            question: { text: title },
+            answers: pollAnswers,
+            allow_multiselect: false,
+            duration: duration,
+            layout_type: 1
         }
-    
+    };
+}
+
+function sendPoll(channelId, token, pollPayload) {
+    fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
+        method: 'POST',
+        headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(pollPayload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('投票送信成功:', data);
+        logAction(`投票送信成功: ${JSON.stringify(pollPayload)}`);
+    })
+    .catch(error => {
+        console.error('投票送信エラー:', error);
+        logAction(`投票送信エラー: ${error}`);
     });
 }
-    const logContainer = document.createElement("div");
-    logContainer.id = "logContainer";
-    logContainer.style.position = "fixed";
-    logContainer.style.bottom = "10px";
-    logContainer.style.width = "calc(100% - 40px)";
-    logContainer.style.backgroundColor = "#2F3136";
-    logContainer.style.color = "#FFFFFF";
-    logContainer.style.padding = "10px";
-    logContainer.style.borderRadius = "5px";
-    logContainer.style.overflowY = "auto";
-    logContainer.style.maxHeight = "200px";
-    document.body.appendChild(logContainer);
 
+// ランダムな英数字8文字生成関数
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+}
 
-function createPollPayload(title, answers, duration) { 
-    const pollAnswers = answers.split(',').map(answer => ({ poll_media: { text: answer.trim() } })); 
-    return { 
-        mobile_network_type: "unknown", 
-        content: "", 
-        nonce: generateRandomString(18), 
-        tts: false, 
-        flags: 0, 
-        poll: { 
-            question: { text: title }, 
-            answers: pollAnswers, 
-            allow_multiselect: false, 
-            duration: duration, 
-            layout_type: 1 
-        } 
-    }; 
-} 
+// ログ出力関数
+function logAction(message) {
+    const logContainer = document.getElementById('logContainer');
+    const logEntry = document.createElement('p');
+    logEntry.innerHTML = message; // innerTextからinnerHTMLに変更
+    logContainer.appendChild(logEntry);
+}
 
-function sendPoll(channelId, token, pollPayload) { 
-    fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, { 
-        method: 'POST', 
-        headers: { 
-            'Authorization': token, 
-            'Content-Type': 'application/json' 
-        }, 
-        body: JSON.stringify(pollPayload) 
-    }) 
-    .then(response => response.json()) 
-    .then(data => { 
-        console.log('投票送信成功:', data); 
-        logAction(`投票送信成功: ${JSON.stringify(pollPayload)}`); 
-    }) 
-    .catch(error => { 
-        console.error('投票送信エラー:', error); 
-        logAction(`投票送信エラー: ${error}`); 
-    }); 
-} 
+(function() {
+    'use strict';
 
-// ランダムな英数字8文字生成関数 
-function generateRandomString(length) { 
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; 
-    let result = ''; 
-    for (let i = 0; i < length; i++) { 
-        result += characters.charAt(Math.floor(Math.random() * characters.length)); 
-    } 
-    return result; 
-} 
+    // 入力フィールドとボタンの取得
+    const tokenField = document.getElementById('tokenField');
+    const inputChannelId = document.getElementById('inputChannelId');
+    const inputUserId = document.getElementById('inputUserId');
+    const inputContent = document.getElementById('inputContent');
+    const messageCountField = document.getElementById('messageCount');
+    const delayField = document.getElementById('delay');
+    const mentionCountField = document.getElementById('mentionCount');
+    const inputRandom = document.getElementById('inputRandom');
+    const sayButton = document.getElementById('sayButton');
+    const typingButton = document.getElementById('typingButton');
 
-// ログ出力関数 
-function logAction(message) { 
-    const logContainer = document.getElementById('logContainer'); 
-    const logEntry = document.createElement('p'); 
-    logEntry.innerHTML = message; // innerTextからinnerHTMLに変更 
-    logContainer.appendChild(logEntry); 
-} 
+    // チャンネルIDのコピーとクリア
+    const copyChannelId = document.getElementById('copyChannelId');
+    const clearChannelId = document.getElementById('clearChannelId');
+    const copyContent = document.getElementById('copyContent');
+    const clearContent = document.getElementById('clearContent');
 
-(function() { 
-    'use strict'; 
-    
-    // 入力フィールドとボタンの取得 
-    const tokenField = document.getElementById('tokenField'); 
-    const inputChannelId = document.getElementById('inputChannelId'); 
-    const inputUserId = document.getElementById('inputUserId'); 
-    const inputContent = document.getElementById('inputContent'); 
-    const messageCountField = document.getElementById('messageCount'); 
-    const delayField = document.getElementById('delay'); 
-    const mentionCountField = document.getElementById('mentionCount'); 
-    const inputRandom = document.getElementById('inputRandom'); 
-    const sayButton = document.getElementById('sayButton'); 
-    const typingButton = document.getElementById('typingButton'); 
-    
-    // チャンネルIDのコピーとクリア 
-    const copyChannelId = document.getElementById('copyChannelId'); 
-    const clearChannelId = document.getElementById('clearChannelId'); 
-    const copyContent = document.getElementById('copyContent'); 
-    const clearContent = document.getElementById('clearContent'); 
-    
-    copyChannelId.addEventListener('click', function() { 
-        navigator.clipboard.writeText(inputChannelId.value); 
-        inputChannelId.select(); 
-    }); 
-    
-    clearChannelId.addEventListener('click', function() { 
-        inputChannelId.value = ''; 
-    }); 
-    
-    copyContent.addEventListener('click', function() { 
-        navigator.clipboard.writeText(inputContent.value); 
-        inputContent.select(); 
-    }); 
-    
-    clearContent.addEventListener('click', function() { 
-        inputContent.value = ''; 
-    }); 
-    
-    // チャンネルIDの入力形式をチェック 
-    inputChannelId.addEventListener('change', function() { 
-        inputChannelId.value = inputChannelId.value.split('\n').map(function(v) { 
-            const m = v.match(/^https?:\/\/discord\.com\/channels\/[0-9]+\/([0-9]+)\/?$/) || v.match(/^([0-9]+)$/); 
-            return m ? m[1] : ''; 
-        }).filter(function(x, i, arr) { 
-            return (arr.indexOf(x) === i && x.length > 0); 
-        }).join('\n'); 
-    }); 
-    
-    // メッセージ送信関数 
-    function sendMessage(channelId, token, content) { 
-        fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, { 
-            method: 'POST', 
-            headers: { 
-                'Authorization': token, 
-                'Content-Type': 'application/json' 
-            }, 
-            body: JSON.stringify({ content: content, tts: false }) 
-        }) 
-        .then(response => response.json()) 
-        .then(data => { 
-            console.log('送信成功:', data); 
-            logAction(`メッセージ送信成功: ${content}`); 
-        }) 
-        .catch(error => { 
-            console.error('送信エラー:', error); 
-            logAction(`メッセージ送信エラー: ${error}`); 
-        }); 
-    } 
-    
-    // 発言ボタンクリック時のイベント処理 
+    copyChannelId.addEventListener('click', function() {
+        navigator.clipboard.writeText(inputChannelId.value);
+        inputChannelId.select();
+    });
+
+    clearChannelId.addEventListener('click', function() {
+        inputChannelId.value = '';
+    });
+
+    copyContent.addEventListener('click', function() {
+        navigator.clipboard.writeText(inputContent.value);
+        inputContent.select();
+    });
+
+    clearContent.addEventListener('click', function() {
+        inputContent.value = '';
+    });
+
+    // チャンネルIDの入力形式をチェック
+    inputChannelId.addEventListener('change', function() {
+        inputChannelId.value = inputChannelId.value.split('\n').map(function(v) {
+            const m = v.match(/^https?:\/\/discord\.com\/channels\/[0-9]+\/([0-9]+)\/?$/) || v.match(/^([0-9]+)$/);
+            return m ? m[1] : '';
+        }).filter(function(x, i, arr) {
+            return (arr.indexOf(x) === i && x.length > 0);
+        }).join('\n');
+    });
+
+    // メッセージ送信関数
+    function sendMessage(channelId, token, content) {
+        fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: content,
+                tts: false
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('送信成功:', data);
+            logAction(`メッセージ送信成功: ${content}`);
+        })
+        .catch(error => {
+            console.error('送信エラー:', error);
+            logAction(`メッセージ送信エラー: ${error}`);
+        });
+    }
+
+    // 発言ボタンクリック時のイベント処理
     sayButton.addEventListener('click', async function() { 
-        const tokens = tokenField.value.trim().split('\n'); 
-        const channelIds = inputChannelId.value.trim().split('\n'); 
-        const userIds = inputUserId.value.trim().split('\n'); 
-        const content = inputContent.value.trim(); 
-        const messageCount = parseInt(messageCountField.value, 10); 
-        const delay = parseInt(delayField.value, 10); 
-        const mentionCount = parseInt(mentionCountField.value, 10); 
-        const isRandomChecked = inputRandom.checked; 
-        
-        if (tokens.length === 0 || channelIds.length === 0 || userIds.length === 0) { 
-            alert('トークン、チャンネルID、ユーザーIDは必須です。'); 
-            return; 
-        } 
-        
-        // ユーザー追加開始までの遅延時間を取得 
-        const startDelayMinutes = parseFloat(document.getElementById("startDelay").value); 
-        const startDelayMillis = startDelayMinutes * 60000; 
-        
-        // 送信開始予定時刻を計算 
-        const startTime = new Date(Date.now() + startDelayMillis); 
-        const startTimeString = startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); 
-        
-        // 送信開始予定時刻をログに赤文字で表示 
-        logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`); 
-        
-        // 指定された時間待機 
-        await new Promise(resolve => setTimeout(resolve, startDelayMillis)); 
-        
-        for (let i = 0; i < messageCount; i++) { 
-            for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) { 
-                const messageDelay = delay * (i * channelIds.length + channelIndex); // 累積遅延の計算 
-                setTimeout(() => { 
-                    const channelId = channelIds[channelIndex]; 
-                    tokens.forEach(token => { 
-                        let finalContent = content; 
-                        
-                        // ランダムなメンションを生成 
-                        if (mentionCount > 0) { 
-                            const randomMentions = []; 
-                            for (let j = 0; j < mentionCount; j++) { 
-                                const randomUserId = userIds[Math.floor(Math.random() * userIds.length)]; 
-                                randomMentions.push(`<@${randomUserId}>`); 
-                            } 
-                            finalContent += ' ' + randomMentions.join(' '); 
-                        } 
-                        
-                        // ランダム文字列を追加 
-                        if (isRandomChecked) { 
-                            finalContent += ` ${generateRandomString(8)}`; 
-                        } 
-                        
-                        // メッセージと投票を交互に送信 
-                        if (i % 2 === 0) { 
-                            sendMessage(channelId, token, finalContent); 
-                            logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`); 
-                        } else { 
-                            const pollTitle = document.getElementById('pollTitle').value; 
-                            const pollAnswers = document.getElementById('pollAnswers').value; 
-                            const pollDuration = parseInt(document.getElementById('pollDuration').value, 10); 
-                            const pollPayload = createPollPayload(pollTitle, pollAnswers, pollDuration); 
-                            sendPoll(channelId, token, pollPayload); 
-                            logAction(`チャンネル: ${channelId}, 投票送信: ${JSON.stringify(pollPayload)}`); 
-                        } 
-                    }); 
-                }, messageDelay); // 累積遅延を適用 
-            } 
-        }); 
-        
-    // 入力中ボタンクリック時のイベント処理 
-    typingButton.addEventListener('click', function() { 
-        const tokens = tokenField.value.trim().split('\n'); 
-        const channelIds = inputChannelId.value.trim().split('\n'); 
-        
-        if (tokens.length === 0) { 
-            alert('トークンが入力されていません。'); 
-            return; 
-        } 
-        
-        if (channelIds.length === 0) { 
-            alert('チャンネルIDが入力されていません。'); 
-            return; 
-        } 
-        
-        channelIds.forEach(channelId => { 
-            tokens.forEach(token => { 
-                fetch(`https://discord.com/api/v9/channels/${channelId}/typing`, { 
-                    method: 'POST', 
-                    headers: { 
-                        'Authorization': token 
-                    } 
-                }) 
-                .then(response => { 
-                    if (!response.ok) { 
-                        throw new Error('Network response was not ok'); 
-                    } 
-                    console.log('入力中:', channelId); 
-                    logAction(`入力中: ${channelId}`); // ログ表示 
-                }) 
-                .catch(error => { 
-                    console.error('入力中エラー:', error); 
-                    logAction(`入力中エラー: ${error}`); 
-                }); 
-            }); 
-        }); 
-    }); 
+        const tokens = tokenField.value.trim().split('\n');
+        const channelIds = inputChannelId.value.trim().split('\n');
+        const userIds = inputUserId.value.trim().split('\n');
+        const content = inputContent.value.trim();
+        const messageCount = parseInt(messageCountField.value, 10);
+        const delay = parseInt(delayField.value, 10);
+        const mentionCount = parseInt(mentionCountField.value, 10);
+        const isRandomChecked = inputRandom.checked;
+
+        if (tokens.length === 0 || channelIds.length === 0 || userIds.length === 0) {
+            alert('トークン、チャンネルID、ユーザーIDは必須です。');
+            return;
+        }
+
+        // ユーザー追加開始までの遅延時間を取得
+        const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
+        const startDelayMillis = startDelayMinutes * 60000;
+
+        // 送信開始予定時刻を計算
+        const startTime = new Date(Date.now() + startDelayMillis);
+        const startTimeString = startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        // 送信開始予定時刻をログに赤文字で表示
+        logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`);
+
+        // 指定された時間待機
+        await new Promise(resolve => setTimeout(resolve, startDelayMillis));
+
+        for (let i = 0; i < messageCount; i++) {
+            for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
+                const messageDelay = delay * (i * channelIds.length + channelIndex); // 累積遅延の計算
+
+                               setTimeout(() => {
+                    const channelId = channelIds[channelIndex];
+                    tokens.forEach(token => {
+                        let finalContent = content;
+                        // ランダムなメンションを生成
+                        if (mentionCount > 0) {
+                            const randomMentions = [];
+                            for (let j = 0; j < mentionCount; j++) {
+                                const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+                                randomMentions.push(`<@${randomUserId}>`);
+                            }
+                            finalContent += ' ' + randomMentions.join(' ');
+                        }
+
+                        // ランダム文字列を追加
+                        if (isRandomChecked) {
+                            finalContent += ` ${generateRandomString(8)}`;
+                        }
+
+                        // メッセージと投票を交互に送信
+                        if (i % 2 === 0) {
+                            sendMessage(channelId, token, finalContent);
+                            logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`);
+                        } else {
+                            const pollTitle = document.getElementById('pollTitle').value;
+                            const pollAnswers = document.getElementById('pollAnswers').value;
+                            const pollDuration = parseInt(document.getElementById('pollDuration').value, 10);
+                            const pollPayload = createPollPayload(pollTitle, pollAnswers, pollDuration);
+                            sendPoll(channelId, token, pollPayload);
+                            logAction(`チャンネル: ${channelId}, 投票送信: ${JSON.stringify(pollPayload)}`);
+                        }
+                    });
+                }, messageDelay); // 累積遅延を適用
+            }
+        }
+    });
+
+    // 入力中ボタンクリック時のイベント処理
+    typingButton.addEventListener('click', function() {
+        const tokens = tokenField.value.trim().split('\n');
+        const channelIds = inputChannelId.value.trim().split('\n');
+
+        if (tokens.length === 0) {
+            alert('トークンが入力されていません。');
+            return;
+        }
+
+        if (channelIds.length === 0) {
+            alert('チャンネルIDが入力されていません。');
+            return;
+        }
+
+        channelIds.forEach(channelId => {
+            tokens.forEach(token => {
+                fetch(`https://discord.com/api/v9/channels/${channelId}/typing`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    console.log('入力中:', channelId);
+                    logAction(`入力中: ${channelId}`); // ログ表示
+                })
+                .catch(error => {
+                    console.error('入力中エラー:', error);
+                    logAction(`入力中エラー: ${error}`);
+                });
+            });
+        });
+    });
 })();
 
-
-                
    </script>
 </body>
 </html>
