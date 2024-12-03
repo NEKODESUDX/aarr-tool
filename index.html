@@ -250,10 +250,6 @@ button:hover {
            <label for="mentionCount">ランダムメンションの数:</label>
            <input id="mentionCount" type="number" value="1" min="0">
        </div>
-       <div class="card">
-           <label for="inputRandom">発言の最後にランダムな文字を追加</label>
-            <input type="checkbox" id="inputRandom" style="transform: scale(1.5); margin-right: 0px;">
-       </div>
   <div class="card">
     <div style="display: flex; align-items: center; margin-bottom: 15px;">
         <label for="includePoll" style="font-size: 16px; margin: 0;">投票を含める</label>
@@ -269,7 +265,14 @@ button:hover {
         <input type="number" id="pollDuration" placeholder="例: 24" class="poll-input">
     </div>
 </div>
-
+<div class="card">
+    <label for="inputRandom">発言の最後にランダムな文字を追加</label>
+     <input type="checkbox" id="inputRandom" style="transform: scale(1.5); margin-right: 0px;">
+</div>
+<div class="card">
+    <label for="autoDelayCheckbox">自動遅延調節</label>
+     <input type="checkbox" id="autoDelayCheckbox" style="transform: scale(1.5); margin-right: 0px;">
+</div>
 </div>
 <label for="startDelay">送信開始までの時間 (分後):</label>
 <input type="number" id="startDelay" name="startDelay" value="0" min="0">
@@ -313,6 +316,9 @@ button:hover {
     logContainer.style.maxHeight = '200px';
     document.body.appendChild(logContainer);
 };
+
+
+
 document.getElementById("showWidget").addEventListener("click", function () {
     const serverId = document.getElementById("serverId").value.trim(); // サーバーIDを取得
     const widgetContainer = document.getElementById("widgetContainer");
@@ -382,13 +388,6 @@ function generateRandomString(length) {
     return result;
 }
 
-// ログ出力関数
-function logAction(message) {
-    const logContainer = document.getElementById('logContainer');
-    const logEntry = document.createElement('p');
-    logEntry.innerHTML = message; // innerTextからinnerHTMLに変更
-    logContainer.appendChild(logEntry);
-}
 
 (function() {
     'use strict';
@@ -439,100 +438,191 @@ function logAction(message) {
         }).join('\n');
     });
 
-    // メッセージ送信関数
-    function sendMessage(channelId, token, content) {
-        fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
-            method: 'POST',
-            headers: {
-                'Authorization': token,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                content: content,
-                tts: false
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('送信成功:', data);
-            logAction(`メッセージ送信成功: ${content}`);
-        })
-        .catch(error => {
-            console.error('送信エラー:', error);
-            logAction(`メッセージ送信エラー: ${error}`);
-        });
-    }
+ 
 
-    // 発言ボタンクリック時のイベント処理
-    sayButton.addEventListener('click', async function() { 
-        const tokens = tokenField.value.trim().split('\n');
-        const channelIds = inputChannelId.value.trim().split('\n');
-        const userIds = inputUserId.value.trim().split('\n');
-        const content = inputContent.value.trim();
-        const messageCount = parseInt(messageCountField.value, 10);
-        const delay = parseInt(delayField.value, 10);
-        const mentionCount = parseInt(mentionCountField.value, 10);
-        const isRandomChecked = inputRandom.checked;
+    (function() {
+    'use strict';
 
-        if (tokens.length === 0 || channelIds.length === 0 || userIds.length === 0) {
-            alert('トークン、チャンネルID、ユーザーIDは必須です。');
-            return;
+    
+    
+
+// ログ出力関数
+function logAction(message) {
+    const logContainer = document.getElementById('logContainer');
+    const logEntry = document.createElement('p');
+    logEntry.innerHTML = message; // HTMLをサポートするため innerHTML を使用
+    logContainer.insertBefore(logEntry, logContainer.firstChild);
+}
+
+// すべてのエラーに対応するリクエスト処理
+async function handleRequestWithDelay(fetchFunction, url, options) {
+    try {
+        const response = await fetchFunction(url, options);
+
+        // ステータスコードが2xxの場合は成功
+        if (response.ok) {
+            const data = await response.json();
+            successfulRequests++;
+            logAction(`リクエスト成功: ${JSON.stringify(data)}`);
+            return data;
+        } else {
+            // 2xx以外のステータスコードの場合
+            const errorData = await response.json();
+            failedRequests++;
+            logAction(`リクエスト失敗: ステータスコード ${response.status}, メッセージ: ${errorData.message || '不明なエラー'}`);
+            return null;
         }
 
-        // ユーザー追加開始までの遅延時間を取得
-        const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
-        const startDelayMillis = startDelayMinutes * 60000;
+    } catch (error) {
+        // ネットワークエラーやJSONパースエラーなどをキャッチ
+        failedRequests++;
+        logAction(`リクエストエラー: ${error.message || error}`);
+        return null;
+    }
+}
 
-        // 送信開始予定時刻を計算
-        const startTime = new Date(Date.now() + startDelayMillis);
-        const startTimeString = startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+// メッセージ送信関数に遅延ロジックを組み込み
+function sendMessage(channelId, token, content) {
+    const url = `https://discord.com/api/v9/channels/${channelId}/messages`;
+    const options = {
+        method: 'POST',
+        headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            content: content,
+            tts: false
+        })
+    };
 
-        // 送信開始予定時刻をログに赤文字で表示
-        logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`);
-
-        // 指定された時間待機
-        await new Promise(resolve => setTimeout(resolve, startDelayMillis));
-
-        for (let i = 0; i < messageCount; i++) {
-            for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
-                const messageDelay = delay * (i * channelIds.length + channelIndex); // 累積遅延の計算
-
-                               setTimeout(() => {
-                    const channelId = channelIds[channelIndex];
-                    tokens.forEach(token => {
-                        let finalContent = content;
-                        // ランダムなメンションを生成
-                        if (mentionCount > 0) {
-                            const randomMentions = [];
-                            for (let j = 0; j < mentionCount; j++) {
-                                const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
-                                randomMentions.push(`<@${randomUserId}>`);
-                            }
-                            finalContent += ' ' + randomMentions.join(' ');
-                        }
-
-                        // ランダム文字列を追加
-                        if (isRandomChecked) {
-                            finalContent += ` ${generateRandomString(8)}`;
-                        }
-
-                        // メッセージと投票を交互に送信
-                        if (i % 2 === 0) {
-                            sendMessage(channelId, token, finalContent);
-                            logAction(`チャンネル: ${channelId}, メッセージ送信: ${finalContent}`);
-                        } else {
-                            const pollTitle = document.getElementById('pollTitle').value;
-                            const pollAnswers = document.getElementById('pollAnswers').value;
-                            const pollDuration = parseInt(document.getElementById('pollDuration').value, 10);
-                            const pollPayload = createPollPayload(pollTitle, pollAnswers, pollDuration);
-                            sendPoll(channelId, token, pollPayload);
-                            logAction(`チャンネル: ${channelId}, 投票送信: ${JSON.stringify(pollPayload)}`);
-                        }
-                    });
-                }, messageDelay); // 累積遅延を適用
-            }
+    handleRequestWithDelay(fetch, url, options).then(data => {
+        if (data) {
+            logAction(`メッセージ送信成功: ${content}`);
+        } else {
+            logAction(`メッセージ送信失敗: ${content}`);
         }
     });
+}
+
+// ランダム遅延を生成する関数
+function getRandomDelay(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+// 遅延自動調整モードでトークン数に基づく遅延時間計算
+function calculateTokenBasedDelay(tokens) {
+    // トークン数に基づいて遅延を計算 (2秒 ÷ トークン数)
+    const tokenCount = tokens.length;
+    if (tokenCount > 0) {
+        return 2000 / tokenCount;  // 2秒 ÷ トークン数 (ミリ秒に変換)
+    } else {
+        return 0; // トークンが0の場合、遅延なし
+    }
+}
+
+// 送信ボタンのクリックイベント
+sayButton.addEventListener('click', async function () {
+    const tokens = tokenField.value.trim().split('\n');
+    const channelIds = inputChannelId.value.trim().split('\n');
+    const userIds = inputUserId.value.trim().split('\n');
+    const content = inputContent.value.trim();
+    const messageCount = parseInt(messageCountField.value, 10);
+    const mentionCount = parseInt(mentionCountField.value, 10);
+    const isRandomChecked = inputRandom.checked;
+
+    const autoDelayChecked = document.getElementById("autoDelayCheckbox").checked;
+
+    // チェックボックスがオンの場合、ユーザーが入力した遅延を無視して、トークンに基づいた遅延を計算
+    let delay = 0;
+    if (autoDelayChecked) {
+        delay = calculateTokenBasedDelay(tokens);  // トークン数に基づいた遅延
+    } else {
+        delay = parseInt(delayField.value, 10);  // ユーザーが入力した遅延
+    }
+
+    if (tokens.length === 0 || channelIds.length === 0 || userIds.length === 0) {
+        alert('トークン、チャンネルID、ユーザーIDは必須です。');
+        return;
+    }
+
+    // ユーザー追加開始までの遅延時間を取得
+    const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
+    const startDelayMillis = startDelayMinutes * 60000;
+
+    // 送信開始予定時刻を計算
+    const startTime = new Date(Date.now() + startDelayMillis);
+    const startTimeString = startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // 送信開始予定時刻をログに赤文字で表示
+    logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`);
+
+    // 指定された時間待機
+    await new Promise(resolve => setTimeout(resolve, startDelayMillis));
+
+    // 送信処理
+    let totalDelay = 0; // 全体で一貫した遅延を管理
+
+    for (let i = 0; i < messageCount; i++) {
+        // トークン順に処理
+        for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
+            const token = tokens[tokenIndex];
+            
+            // チャンネル順に処理
+            for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
+                const channelId = channelIds[channelIndex];
+                const finalContent = generateFinalContent(content, userIds, mentionCount, isRandomChecked);
+                
+                // 遅延をランダムに設定（最小遅延 + ランダムな増加）
+                const randomDelay = getRandomDelay(delay, delay * 2); // 最大遅延は2倍
+                totalDelay += randomDelay; // 全体の遅延を累積
+
+                setTimeout(() => {
+                    // メッセージ送信
+                    sendMessage(channelId, token, finalContent);
+                    logAction(`チャンネル: ${channelId}, トークン: ${token}, メッセージ送信: ${finalContent}`);
+
+                    // 投票送信を交互に行う
+                    if (i % 2 === 0) {
+                        const pollTitle = document.getElementById('pollTitle').value;
+                        const pollAnswers = document.getElementById('pollAnswers').value;
+                        const pollDuration = parseInt(document.getElementById('pollDuration').value, 10);
+                        const pollPayload = createPollPayload(pollTitle, pollAnswers, pollDuration);
+                        sendPoll(channelId, token, pollPayload);
+                        logAction(`チャンネル: ${channelId}, トークン: ${token}, 投票送信: ${JSON.stringify(pollPayload)}`);
+                    }
+                }, totalDelay); // 全体遅延を適用
+            }
+        }
+    }
+});
+
+// メッセージ送信内容を生成する関数
+function generateFinalContent(content, userIds, mentionCount, isRandomChecked) {
+    let finalContent = content;
+
+    // ランダムなメンションを生成
+    if (mentionCount > 0) {
+        const randomMentions = [];
+        for (let j = 0; j < mentionCount; j++) {
+            const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+            randomMentions.push(`<@${randomUserId}>`);
+        }
+        finalContent += ' ' + randomMentions.join(' ');
+    }
+
+    // ランダム文字列を追加
+    if (isRandomChecked) {
+        finalContent += ` ${generateRandomString(8)}`;
+    }
+
+    return finalContent;
+}
+
+
+
+})();
+
 
     // 入力中ボタンクリック時のイベント処理
     typingButton.addEventListener('click', function() {
@@ -572,6 +662,7 @@ function logAction(message) {
         });
     });
 })();
+
 
    </script>
 </body>
