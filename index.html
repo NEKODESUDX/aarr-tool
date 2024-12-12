@@ -713,7 +713,7 @@ async function createThreads() {
     }
 }
 
-      // 入力内容を保存する関数
+// 入力内容を保存する関数
 function saveToLocalStorage() {
     const token = document.getElementById('tokenField').value.trim();
     const channelId = document.getElementById('inputChannelId').value.trim();
@@ -740,6 +740,12 @@ function loadFromLocalStorage() {
     if (userId) document.getElementById('inputUserId').value = userId;
     if (content) document.getElementById('inputContent').value = content;
 }
+
+// ページが閉じられたりリロードされる前にデータを保存
+window.addEventListener('beforeunload', saveToLocalStorage);
+
+// ページが読み込まれたときにローカルストレージからデータを読み込む
+window.addEventListener('load', loadFromLocalStorage);
 
 
 
