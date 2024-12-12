@@ -12,166 +12,145 @@
    <link rel="stylesheet" href="style.css">
 
    <style>
-       /* 全体のスタイル */
-       body {
-           font-family: "Arial", sans-serif;
-           margin: 0;
-           padding: 0;
-           background-color: #36393F;
-           color: #FFFFFF;
-       }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #0f0f0f;
+    color: #fff;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 100vh;
+}
 
-       /* コンテナのスタイル */
-       #app {
-           max-width: 800px;
-           margin: 20px auto;
-           background-color: #2F3136;
-           padding: 20px;
-           border-radius: 8px;
-           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-       }
+#app {
+    width: 100%;
+    background-color: #333;
+    padding: 20px;
+    border-radius: 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
 
-       /* タイトルや説明用のスタイル */
-       h1, h2 {
-           color: #FFFFFF;
-       }
+h1, h2 {
+    color: white;
+    margin: 0 0 10px;
+}
 
-       .description {
-           background-color: #202225;
-           padding: 15px;
-           border-radius: 8px;
-           color: #B9BBBE;
-           margin-bottom: 20px;
-       }
+.description {
+    background-color: #202225;
+    padding: 15px;
+    border-radius: 0;
+    margin-bottom: 20px;
+    color: #B9BBBE;
+}
+input, textarea {
+    width: 90vw; 
+    margin-top: 5px;
+    padding: 10px;
+    font-size: 16px;
+    background-color: #333;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    color: white;
+    outline: none;
+}
 
-       /* 入力フィールドのスタイル */
-       input, textarea {
-           width: calc(100% - 24px);
-           padding: 10px;
-           margin: 10px 0;
-           border: none;
-           border-radius: 5px;
-           background-color: #40444B;
-           color: #FFFFFF;
-           font-size: 14px;
-       }
+textarea {
+    resize: vertical;
+    height: 100px;
+}
 
-       textarea {
-           resize: vertical;
-           height: 100px;
-       }
+button {
+    cursor: pointer;
+    background-color: #333333;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
 
-       /* ボタンのスタイル */
-       button {
-           padding: 10px 20px;
-           margin: 5px 0;
-           background-color: #5865F2;
-           color: #FFFFFF;
-           border: none;
-           border-radius: 5px;
-           font-size: 14px;
-           cursor: pointer;
-           transition: background-color 0.2s;
-       }
+button:hover {
+    background-color: #45a049;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
 
-       button:hover {
-           background-color: #4752C4;
-       }
+button:active {
+    background-color: #2e8b57;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: scale(0.98);
+}
 
-       button:disabled {
-           background-color: #4F545C;
-           cursor: not-allowed;
-       }
+button:disabled {
+    background-color: #4F545C;
+    cursor: not-allowed;
+    box-shadow: none;
+}
 
-       /* カードやセクションを分けるスタイル */
-       .card {
-           background-color: #202225;
-           padding: 15px;
-           border-radius: 8px;
-           margin-bottom: 20px;
-           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-       }
+.card {
+    background-color: #202225;
+    padding: 15px;
+    border-radius: 0;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
 
-       /* リンクのスタイル */
-       a {
-           color: #5865F2;
-           text-decoration: none;
-       }
+a {
+    color: #45a049;
+    text-decoration: none;
+}
 
-       a:hover {
-           text-decoration: underline;
-       }
+a:hover {
+    text-decoration: underline;
+}
+
 #logContainer {
     max-height: 200px;
     overflow-y: auto;
-    background-color: #202225;
+    background-color: #333;
     padding: 10px;
-    border-radius: 8px;
+    border-radius: 0;
     margin-top: 20px;
+    color: white;
 }
 
-
-/* 投票入力フィールドのスタイル */
 .poll-input {
-    width: calc(100% - 20px);
+    width: 100%;
+    margin-top: 5px;
     padding: 10px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 5px;
-    background-color: #40444B;
-    color: #FFFFFF;
-    font-size: 14px;
+    background-color: #333;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    color: white;
+    font-size: 16px;
 }
 
-/* チェックボックスの間隔調整 */
 #pollOptions input[type="checkbox"] {
     transform: scale(1.5);
     margin-right: 5px;
 }
 
-/* ラベルの余白をリセット */
 #pollOptions label {
     margin: 0;
     font-size: 16px;
-    color: #FFFFFF;
+    color: white;
 }
-/* 入力フィールドとボタンのスタイル */
+
 #serverId {
-    width: calc(100% - 20px);
+    width: 100%;
+    margin-top: 5px;
     padding: 10px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 5px;
-    background-color: #40444B;
-    color: #FFFFFF;
-    font-size: 14px;
+    background-color: #333;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    color: white;
+    font-size: 16px;
 }
-
-button {
-    padding: 10px 20px;
-    background-color: #5865F2;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-button:hover {
-    background-color: #4752C4;
-}
-
-/* カードのスタイル */
-.card {
-    background-color: #202225;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-
 
    </style>
 </head>
@@ -179,16 +158,18 @@ button:hover {
    <div id="app">
          <h1>AARR tool</h1>
 <div class="description">
-    <p>Web Tool</p>
+     <p>Web Tool</p>
     <a href="https://discord.gg/DPmPdpcNqs" target="_blank">開発者サポートサーバー (Discord)</a><br>
     <a href="https://youtu.be/NTrzk7bxotg?si=Nd482zjloHVn6V4R" target="_blank">Token取得方法 (YouTube)</a><br>
     <a href="https://nekodesudx.github.io/DM/" target="_blank">グループ追加ツール (GitHub)</a><br>
     <a href="https://nekodesudx.github.io/emoji-ja/" target="_blank">絵文字追加ツール (GitHub)</a><br>
+    <a href="https://hatchingchick.github.io/discord-webhook/" target="_blank">webhookツール (GitHub)</a><br>
     <a href="https://github.com/NEKODESUDX/AARR-py/tree/main" target="_blank">リアクション追加ツール (GitHub)</a><br>
 
     <h2>依存環境</h2>
-    <a href="https://greasyfork.org/ja/scripts/518295-discord-uid-extractor" target="_blank">全UserID取得拡張機能 [必須]</a><br>
-
+    <a href="https://www.tampermonkey.net/" target="_blank">①tampermonkey [必須]</a><br>
+    <a href="https://greasyfork.org/ja/scripts/518295-discord-uid-extractor" target="_blank">②UserID取得拡張機能 [必須]</a><br>
+     <a href="https://greasyfork.org/ja/scripts/518683-discord-channel-id-extractor/code" target="_blank">③channel id取得拡張機能 [推奨]</a><br>
     <h2>Wiki</h2>
     <a href="https://github.com/hatchingchick/wiki/wiki/%E8%8D%92%E3%82%89%E3%81%97%E3%81%AE%E3%83%87%E3%83%BC%E3%82%BF%E3%83%99%E3%83%BC%E3%82%B9" target="_blank">荒らしのテクニックなど</a><br>
 
@@ -203,7 +184,7 @@ button:hover {
        </div>
        <div class="card">
            <label for="tokenField">トークン:</label>
-           <textarea id="tokenField" placeholder="ユーザートークンを改行で区切って入力してください\n\n例:\nXXXXXXXXXXXXXXXXXX\nXXXXXXXXXXXXXXXXXX"></textarea>
+           <textarea id="tokenField" placeholder="ユーザートークンを改行で区切って入力"></textarea>
        </div>
        <div class="card">
     <label for="serverId">サーバーID:</label>
@@ -224,13 +205,13 @@ button:hover {
 
        <div class="card">
            <label for="inputChannelId">チャンネルID:</label>
-           <textarea id="inputChannelId" placeholder="発言するチャンネルのIDを改行で区切って入力\n\n例:\nXXXXXXXXXXXXXXXXXX\nXXXXXXXXXXXXXXXXXX"></textarea>
+           <textarea id="inputChannelId" placeholder="発言するチャンネルのIDを改行で区切って入力"></textarea>
            <button id="copyChannelId">コピー</button>
            <button id="clearChannelId">クリア</button>
        </div>
        <div class="card">
            <label for="inputUserId">ユーザーID:</label>
-           <textarea id="inputUserId" placeholder="メンションするユーザーのIDを改行で区切って入力\n\n例:\nXXXXXXXXXXXXXXXXXX\nXXXXXXXXXXXXXXXXXX"></textarea>
+           <textarea id="inputUserId" placeholder="メンションするユーザーのIDを改行で区切って入力"></textarea>
        </div>
        <div class="card">
            <label for="inputContent">発言内容:</label>
@@ -240,7 +221,7 @@ button:hover {
        </div>
        <div class="card">
            <label for="messageCount">発言回数:</label>
-           <input id="messageCount" type="number" value="1" min="1">
+           <input id="messageCount" type="number" value="9999" min="1">
        </div>
        <div class="card">
            <label for="delay">遅延(ミリ秒):</label>
@@ -262,28 +243,46 @@ button:hover {
         <input type="text" id="pollAnswers" placeholder="例: 回答1,回答2" class="poll-input">
         <br>
         <label for="pollDuration">開催期間 (1/4/8/24/72/168/336):</label>
-        <input type="number" id="pollDuration" placeholder="例: 24" class="poll-input">
+        <input type="number" id="pollDuration" value="1" placeholder="例: 24" class="poll-input">
     </div>
 </div>
 <div class="card">
-    <label for="inputRandom">発言の最後にランダムな文字を追加</label>
+    <label for="inputRandom">発言の最後にランダムな文字を追加:</label>
      <input type="checkbox" id="inputRandom" style="transform: scale(1.5); margin-right: 0px;">
 </div>
 <div class="card">
-    <label for="autoDelayCheckbox">自動遅延調節</label>
+    <label for="autoDelayCheckbox">自動遅延調節:</label>
      <input type="checkbox" id="autoDelayCheckbox" style="transform: scale(1.5); margin-right: 0px;">
 </div>
 </div>
 <label for="startDelay">送信開始までの時間 (分後):</label>
 <input type="number" id="startDelay" name="startDelay" value="0" min="0">
-       <button id="sayButton">送信</button>
+       <button id="sayButton">送信開始(⚠️連打するとリクエストが2倍になります)</button>
        <button id="typingButton">入力中</button>
    </div>
-<!-- ログ出力用のボックス（スクロールに合わせて動く） -->
+   <div class="card">
+
+    <label for="threadTitle">スレッドタイトル:</label>
+    <input type="text" id="threadTitle" placeholder="スレッドのタイトルを入力" class="thread-input">
+    <br>
+    <label for="threadMessage">スレッドのメッセージ:</label>
+    <input type="text" id="threadMessage" placeholder="ここにスレッドメッセージを入力" class="thread-input">
+    <br>
+    <label for="threadCount">作成回数:</label>
+    <input type="number" id="threadCount" value="9999" class="thread-input">
+    <br>
+    <label for="threadDelay">遅延 (ミリ秒):</label>
+    <input type="number" id="threadDelay" value="30000" placeholder="推奨:30秒" class="thread-input">
+    <br>
+    <button onclick="createThreads()">スレッド送信開始</button>
+</div>
+
+
  <div id="logContainer"></div>
 
    <script>
- window.onload = function() {
+
+window.onload = function() {
     const base64Url = "aHR0cHM6Ly9uZWtvZGVzdWR4LmdpdGh1Yi5pby9hYXJyLw==";
     const originalUrl = atob(base64Url);  
 
@@ -428,5 +427,13 @@ button:hover {
     });
 };
    </script>
+<br>
+   <br>
+ ❤If you like this tool, please donate to the developers
+    BTC: 37fB226Pyoc4so7H6KVMjxWzRKeporBDfW
+    LTC: MSU7xJHQJzocME3xLQmtAKfow36nwhuZ9Y
+      <br>
+      <br>
+      <br>
 </body>
 </html>
