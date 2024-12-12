@@ -527,7 +527,6 @@ function calculateTokenBasedDelay(tokens) {
     }
 }
 
-// 送信ボタンのクリックイベント
 let isProcessing = false;  // 処理中かどうかを追跡するフラグ
 
 // 送信ボタンのクリックイベント
@@ -583,17 +582,18 @@ sayButton.addEventListener('click', async function () {
     // メッセージ回数が0なら無限ループにする
     const messageLoopCount = (messageCount === 0) ? Infinity : messageCount;
 
-    for (let i = 0; i < messageLoopCount; i++) {
-        if (!isProcessing) break; // 処理が停止されたらループを抜ける
+    // 再帰的にメッセージを送信
+    async function sendMessages(i, totalDelay) {
+        if (!isProcessing || i >= messageLoopCount) return; // 処理が停止されたらループを抜ける
 
         // トークン順に処理
         for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
-            if (!isProcessing) break; // 処理が停止されたらループを抜ける
+            if (!isProcessing) return; // 処理が停止されたらループを抜ける
             const token = tokens[tokenIndex];
 
             // チャンネル順に処理
             for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
-                if (!isProcessing) break; // 処理が停止されたらループを抜ける
+                if (!isProcessing) return; // 処理が停止されたらループを抜ける
                 const channelId = channelIds[channelIndex];
                 const finalContent = generateFinalContent(content, userIds, mentionCount, isRandomChecked);
 
@@ -619,10 +619,19 @@ sayButton.addEventListener('click', async function () {
                 }, totalDelay);
             }
         }
+
+        // 次のメッセージを送信（再帰的に呼び出し）
+        if (isProcessing) {
+            setTimeout(() => sendMessages(i + 1, 0), randomDelay); // 次のメッセージはランダム遅延後に送信
+        }
     }
+
+    // メッセージ送信を開始
+    sendMessages(0, 0);
 
     isProcessing = false; // 処理完了
 });
+
 
 
 // メッセージ送信内容を生成する関数
