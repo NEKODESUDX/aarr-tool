@@ -281,7 +281,9 @@ a:hover {
  <div id="logContainer"></div>
 
    <script>
- window.onload = function() {
+      // ページが読み込まれた時にデータを読み込む
+window.onload = function() {
+    loadFromLocalStorage();
     const base64Url = "aHR0cHM6Ly9uZWtvZGVzdWR4LmdpdGh1Yi5pby9hYXJyLw==";
     const originalUrl = atob(base64Url);  
 
@@ -739,11 +741,7 @@ function loadFromLocalStorage() {
     if (content) document.getElementById('inputContent').value = content;
 }
 
-// ページが読み込まれた時にデータを読み込む
-window.onload = function() {
-    loadFromLocalStorage();
-    // 他の初期化処理...
-};
+
 
 
    </script>
