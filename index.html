@@ -527,18 +527,8 @@ function calculateTokenBasedDelay(tokens) {
     }
 }
 
-let isProcessing = false;  // 処理中かどうかを追跡するフラグ
-
 // 送信ボタンのクリックイベント
 sayButton.addEventListener('click', async function () {
-    console.log('ボタンがクリックされました');
-    if (isProcessing) {
-        console.log('処理中です。');
-        logAction('処理が停止しました。');
-        return;
-    }
-
-    isProcessing = true; // 処理開始
     const tokens = tokenField.value.trim().split('\n');
     const channelIds = inputChannelId.value.trim().split('\n');
     const userIds = inputUserId.value.trim().split('\n');
@@ -546,9 +536,8 @@ sayButton.addEventListener('click', async function () {
     const messageCount = parseInt(messageCountField.value, 10);
     const mentionCount = parseInt(mentionCountField.value, 10);
     const isRandomChecked = inputRandom.checked;
-
     const autoDelayChecked = document.getElementById("autoDelayCheckbox").checked;
-
+    // チェックボックスがオンの場合、ユーザーが入力した遅延を無視して、トークンに基づいた遅延を計算
     let delay = 0;
     if (autoDelayChecked) {
         delay = calculateTokenBasedDelay(tokens);  // トークン数に基づいた遅延
@@ -560,39 +549,41 @@ sayButton.addEventListener('click', async function () {
         alert('トークン、チャンネルID、ユーザーIDは必須です。');
         return;
     }
-
+    // ユーザー追加開始までの遅延時間を取得
     const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
     const startDelayMillis = startDelayMinutes * 60000;
 
+    // 送信開始予定時刻を計算
     const startTime = new Date(Date.now() + startDelayMillis);
     const startTimeString = startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+    // 送信開始予定時刻をログに赤文字で表示
     logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`);
+
+    // 指定された時間待機
     await new Promise(resolve => setTimeout(resolve, startDelayMillis));
 
-    let totalDelay = 0;
-    const messageLoopCount = (messageCount === 0) ? Infinity : messageCount;
+    // 送信処理
+    let totalDelay = 0; // 全体で一貫した遅延を管理
 
-    async function sendMessages(i, totalDelay) {
-        if (!isProcessing || i >= messageLoopCount) return;
-        console.log(`メッセージ送信中: ${i}`);
+    for (let i = 0; i < messageCount; i++) {
+        // トークン順に処理
         for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
-            if (!isProcessing) return;
             const token = tokens[tokenIndex];
-
+            
+            // チャンネル順に処理
             for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
-                if (!isProcessing) return;
                 const channelId = channelIds[channelIndex];
                 const finalContent = generateFinalContent(content, userIds, mentionCount, isRandomChecked);
-
-                const randomDelay = getRandomDelay(delay, delay * 2);
-                totalDelay += randomDelay;
-
+                
+                // 遅延をランダムに設定（最小遅延 + ランダムな増加）
+                const randomDelay = getRandomDelay(delay, delay * 2); // 最大遅延は2倍
+                totalDelay += randomDelay; // 全体の遅延を累積
                 setTimeout(() => {
-                    if (!isProcessing) return;
+                    // メッセージ送信
                     sendMessage(channelId, token, finalContent);
                     logAction(`チャンネル: ${channelId}, トークン: ${token}, メッセージ送信: ${finalContent}`);
-
+                    // 投票送信を交互に行う
                     if (i % 2 === 0) {
                         const pollTitle = document.getElementById('pollTitle').value;
                         const pollAnswers = document.getElementById('pollAnswers').value;
@@ -601,17 +592,10 @@ sayButton.addEventListener('click', async function () {
                         sendPoll(channelId, token, pollPayload);
                         logAction(`チャンネル: ${channelId}, トークン: ${token}, 投票送信: ${JSON.stringify(pollPayload)}`);
                     }
-                }, totalDelay);
+                }, totalDelay); // 全体遅延を適用
             }
         }
-
-        if (isProcessing) {
-            setTimeout(() => sendMessages(i + 1, 0), randomDelay);
-        }
     }
-
-    sendMessages(0, 0);
-    isProcessing = false;
 });
 
 
