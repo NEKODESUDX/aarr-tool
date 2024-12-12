@@ -711,6 +711,40 @@ async function createThreads() {
     }
 }
 
+      // 入力内容を保存する関数
+function saveToLocalStorage() {
+    const token = document.getElementById('tokenField').value.trim();
+    const channelId = document.getElementById('inputChannelId').value.trim();
+    const userId = document.getElementById('inputUserId').value.trim();
+    const content = document.getElementById('inputContent').value.trim();
+
+    // ローカルストレージに保存
+    localStorage.setItem('token', token);
+    localStorage.setItem('channelId', channelId);
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('content', content);
+}
+
+// ページが読み込まれたときにローカルストレージからデータを取得して表示する関数
+function loadFromLocalStorage() {
+    const token = localStorage.getItem('token');
+    const channelId = localStorage.getItem('channelId');
+    const userId = localStorage.getItem('userId');
+    const content = localStorage.getItem('content');
+
+    // 取得したデータを入力フィールドにセット
+    if (token) document.getElementById('tokenField').value = token;
+    if (channelId) document.getElementById('inputChannelId').value = channelId;
+    if (userId) document.getElementById('inputUserId').value = userId;
+    if (content) document.getElementById('inputContent').value = content;
+}
+
+// ページが読み込まれた時にデータを読み込む
+window.onload = function() {
+    loadFromLocalStorage();
+    // 他の初期化処理...
+};
+
 
    </script>
 <br>
