@@ -531,9 +531,9 @@ let isProcessing = false;  // 処理中かどうかを追跡するフラグ
 
 // 送信ボタンのクリックイベント
 sayButton.addEventListener('click', async function () {
+    console.log('ボタンがクリックされました');
     if (isProcessing) {
-        // 処理が進行中なら停止
-        isProcessing = false;
+        console.log('処理中です。');
         logAction('処理が停止しました。');
         return;
     }
@@ -549,7 +549,6 @@ sayButton.addEventListener('click', async function () {
 
     const autoDelayChecked = document.getElementById("autoDelayCheckbox").checked;
 
-    // チェックボックスがオンの場合、ユーザーが入力した遅延を無視して、トークンに基づいた遅延を計算
     let delay = 0;
     if (autoDelayChecked) {
         delay = calculateTokenBasedDelay(tokens);  // トークン数に基づいた遅延
@@ -562,52 +561,38 @@ sayButton.addEventListener('click', async function () {
         return;
     }
 
-    // ユーザー追加開始までの遅延時間を取得
     const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
     const startDelayMillis = startDelayMinutes * 60000;
 
-    // 送信開始予定時刻を計算
     const startTime = new Date(Date.now() + startDelayMillis);
     const startTimeString = startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-    // 送信開始予定時刻をログに赤文字で表示
     logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`);
-
-    // 指定された時間待機
     await new Promise(resolve => setTimeout(resolve, startDelayMillis));
 
-    // 送信処理
-    let totalDelay = 0; // 全体で一貫した遅延を管理
-
-    // メッセージ回数が0なら無限ループにする
+    let totalDelay = 0;
     const messageLoopCount = (messageCount === 0) ? Infinity : messageCount;
 
-    // 再帰的にメッセージを送信
     async function sendMessages(i, totalDelay) {
-        if (!isProcessing || i >= messageLoopCount) return; // 処理が停止されたらループを抜ける
-
-        // トークン順に処理
+        if (!isProcessing || i >= messageLoopCount) return;
+        console.log(`メッセージ送信中: ${i}`);
         for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
-            if (!isProcessing) return; // 処理が停止されたらループを抜ける
+            if (!isProcessing) return;
             const token = tokens[tokenIndex];
 
-            // チャンネル順に処理
             for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
-                if (!isProcessing) return; // 処理が停止されたらループを抜ける
+                if (!isProcessing) return;
                 const channelId = channelIds[channelIndex];
                 const finalContent = generateFinalContent(content, userIds, mentionCount, isRandomChecked);
 
-                // 遅延をランダムに設定（最小遅延 + ランダムな増加）
-                const randomDelay = getRandomDelay(delay, delay * 2); // 最大遅延は2倍
-                totalDelay += randomDelay; // 全体の遅延を累積
+                const randomDelay = getRandomDelay(delay, delay * 2);
+                totalDelay += randomDelay;
 
                 setTimeout(() => {
-                    if (!isProcessing) return; // 処理が停止されたら送信をスキップ
-                    // メッセージ送信
+                    if (!isProcessing) return;
                     sendMessage(channelId, token, finalContent);
                     logAction(`チャンネル: ${channelId}, トークン: ${token}, メッセージ送信: ${finalContent}`);
 
-                    // 投票送信を交互に行う
                     if (i % 2 === 0) {
                         const pollTitle = document.getElementById('pollTitle').value;
                         const pollAnswers = document.getElementById('pollAnswers').value;
@@ -620,16 +605,13 @@ sayButton.addEventListener('click', async function () {
             }
         }
 
-        // 次のメッセージを送信（再帰的に呼び出し）
         if (isProcessing) {
-            setTimeout(() => sendMessages(i + 1, 0), randomDelay); // 次のメッセージはランダム遅延後に送信
+            setTimeout(() => sendMessages(i + 1, 0), randomDelay);
         }
     }
 
-    // メッセージ送信を開始
     sendMessages(0, 0);
-
-    isProcessing = false; // 処理完了
+    isProcessing = false;
 });
 
 
