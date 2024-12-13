@@ -713,33 +713,44 @@ async function createThreads() {
     }
 }
 
-// 入力内容を保存する関数
 function saveToLocalStorage() {
     const token = document.getElementById('tokenField').value.trim();
     const channelId = document.getElementById('inputChannelId').value.trim();
     const userId = document.getElementById('inputUserId').value.trim();
     const content = document.getElementById('inputContent').value.trim();
+    const pollTitle = document.getElementById('pollTitle').value.trim();
+    const pollAnswers = document.getElementById('pollAnswers').value.trim();
+    const pollDuration = document.getElementById('pollDuration').value.trim();
 
     // ローカルストレージに保存
     localStorage.setItem('token', token);
     localStorage.setItem('channelId', channelId);
     localStorage.setItem('userId', userId);
     localStorage.setItem('content', content);
+    localStorage.setItem('pollTitle', pollTitle);
+    localStorage.setItem('pollAnswers', pollAnswers);
+    localStorage.setItem('pollDuration', pollDuration);
 }
 
-// ページが読み込まれたときにローカルストレージからデータを取得して表示する関数
-function loadFromLocalStorage() {
+      function loadFromLocalStorage() {
     const token = localStorage.getItem('token');
     const channelId = localStorage.getItem('channelId');
     const userId = localStorage.getItem('userId');
     const content = localStorage.getItem('content');
+    const pollTitle = localStorage.getItem('pollTitle');
+    const pollAnswers = localStorage.getItem('pollAnswers');
+    const pollDuration = localStorage.getItem('pollDuration');
 
     // 取得したデータを入力フィールドにセット
     if (token) document.getElementById('tokenField').value = token;
     if (channelId) document.getElementById('inputChannelId').value = channelId;
     if (userId) document.getElementById('inputUserId').value = userId;
     if (content) document.getElementById('inputContent').value = content;
+    if (pollTitle) document.getElementById('pollTitle').value = pollTitle;
+    if (pollAnswers) document.getElementById('pollAnswers').value = pollAnswers;
+    if (pollDuration) document.getElementById('pollDuration').value = pollDuration;
 }
+
 
 // ページが閉じられたりリロードされる前にデータを保存
 window.addEventListener('beforeunload', saveToLocalStorage);
