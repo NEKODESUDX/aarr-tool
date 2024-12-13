@@ -713,6 +713,7 @@ async function createThreads() {
     }
 }
 
+// ローカルストレージに保存する関数
 function saveToLocalStorage() {
     const token = document.getElementById('tokenField').value.trim();
     const channelId = document.getElementById('inputChannelId').value.trim();
@@ -722,6 +723,12 @@ function saveToLocalStorage() {
     const pollAnswers = document.getElementById('pollAnswers').value.trim();
     const pollDuration = document.getElementById('pollDuration').value.trim();
 
+    // スレッド関連の情報も保存
+    const threadTitle = document.getElementById('threadTitle').value.trim();
+    const threadMessage = document.getElementById('threadMessage').value.trim();
+    const threadCount = document.getElementById('threadCount').value.trim();
+    const threadDelay = document.getElementById('threadDelay').value.trim();
+
     // ローカルストレージに保存
     localStorage.setItem('token', token);
     localStorage.setItem('channelId', channelId);
@@ -730,9 +737,16 @@ function saveToLocalStorage() {
     localStorage.setItem('pollTitle', pollTitle);
     localStorage.setItem('pollAnswers', pollAnswers);
     localStorage.setItem('pollDuration', pollDuration);
+
+    // スレッド情報をローカルストレージに保存
+    localStorage.setItem('threadTitle', threadTitle);
+    localStorage.setItem('threadMessage', threadMessage);
+    localStorage.setItem('threadCount', threadCount);
+    localStorage.setItem('threadDelay', threadDelay);
 }
 
-      function loadFromLocalStorage() {
+// ローカルストレージからデータを読み込む関数
+function loadFromLocalStorage() {
     const token = localStorage.getItem('token');
     const channelId = localStorage.getItem('channelId');
     const userId = localStorage.getItem('userId');
@@ -740,6 +754,12 @@ function saveToLocalStorage() {
     const pollTitle = localStorage.getItem('pollTitle');
     const pollAnswers = localStorage.getItem('pollAnswers');
     const pollDuration = localStorage.getItem('pollDuration');
+
+    // スレッド情報を取得
+    const threadTitle = localStorage.getItem('threadTitle');
+    const threadMessage = localStorage.getItem('threadMessage');
+    const threadCount = localStorage.getItem('threadCount');
+    const threadDelay = localStorage.getItem('threadDelay');
 
     // 取得したデータを入力フィールドにセット
     if (token) document.getElementById('tokenField').value = token;
@@ -749,8 +769,13 @@ function saveToLocalStorage() {
     if (pollTitle) document.getElementById('pollTitle').value = pollTitle;
     if (pollAnswers) document.getElementById('pollAnswers').value = pollAnswers;
     if (pollDuration) document.getElementById('pollDuration').value = pollDuration;
-}
 
+    // スレッド情報を入力フィールドにセット
+    if (threadTitle) document.getElementById('threadTitle').value = threadTitle;
+    if (threadMessage) document.getElementById('threadMessage').value = threadMessage;
+    if (threadCount) document.getElementById('threadCount').value = threadCount;
+    if (threadDelay) document.getElementById('threadDelay').value = threadDelay;
+}
 
 // ページが閉じられたりリロードされる前にデータを保存
 window.addEventListener('beforeunload', saveToLocalStorage);
