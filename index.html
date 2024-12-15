@@ -886,13 +886,35 @@ function loadFromLocalStorage() {
     document.getElementById('eventEndTime').value = endTime;
 }
 
+// ページ内容をローカルストレージに保存する関数
+function saveContent() {
+    const inputs = document.querySelectorAll("input, textarea");
+    inputs.forEach(input => {
+        localStorage.setItem(input.id, input.value);
+    });
+}
+
+// ページ内容をローカルストレージから復元する関数
+function loadContent() {
+    const inputs = document.querySelectorAll("input, textarea");
+    inputs.forEach(input => {
+        if (localStorage.getItem(input.id)) {
+            input.value = localStorage.getItem(input.id);
+        }
+    });
+}
+      
 // ページが閉じられたりリロードされる前にデータを保存
 window.addEventListener('beforeunload', saveToLocalStorage);
 
 // ページが読み込まれたときにローカルストレージからデータを読み込む
 window.addEventListener('load', loadFromLocalStorage);
 
+// ウィンドウが閉じられる前に内容を保存
+window.addEventListener('beforeunload', saveContent);
 
+// ページが読み込まれたときに内容を復元
+window.addEventListener('load', loadContent);
 
 // イベント作成関数
 async function createEvent(token, guildId, eventName, eventDescription, eventLocation, eventStartTime, eventEndTime, index) {
