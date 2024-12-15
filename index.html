@@ -733,15 +733,13 @@ function generateFinalContent(content, userIds, mentionCount, isRandomChecked) {
     });
 })();
 
-async function createThread(token, channelId, title, message) {
-    const url = `https://discord.com/api/v9/channels/${channelId}/threads?use_nested_fields=true`;
+ async function createThread(token, channelId, title, followUpMessage) {
+    const url = `https://discord.com/api/v9/channels/${channelId}/threads`;
     const payload = {
         name: title,
+        type: 11, // スレッドのタイプをパブリックに設定
         auto_archive_duration: 4320,
-        applied_tags: [],
-        message: {
-            content: message
-        }
+        location: "Thread Browser Toolbar"
     };
 
     const response = await fetch(url, {
@@ -752,29 +750,52 @@ async function createThread(token, channelId, title, message) {
         },
         body: JSON.stringify(payload)
     });
-
     if (response.ok) {
+        const data = await response.json();
+        const threadChannelId = data.id; // レスポンスからスレッドのチャンネルIDを取得
         console.log(`スレッド「${title}」を作成しました`);
+        await sendMessageToThread(token, threadChannelId, followUpMessage); // スレッドに指定されたメッセージを送信
     } else {
         console.error('スレッド作成に失敗しました', await response.json());
     }
 }
 
-async function createThreads() {
-    const tokens = document.getElementById('tokenField').value.split('\n').map(token => token.trim()); // トークンを改行で区切る
-    const channelIds = document.getElementById('inputChannelId').value.split('\n').map(id => id.trim()); // チャンネルIDを改行で区切る
-    const title = document.getElementById('threadTitle').value;
-    const message = document.getElementById('threadMessage').value;
-    const count = parseInt(document.getElementById('threadCount').value) || 1;
-    const delay = parseInt(document.getElementById('threadDelay').value) || 1000; // 遅延時間を取得、デフォルトは1000ms
+async function sendMessageToThread(token, threadChannelId, message) {
+    const url = `https://discord.com/api/v9/channels/${threadChannelId}/messages`;
+    const payload = {
+        content: message
+    };
 
-    for (const token of tokens) {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Authorization': `${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
+    if (response.ok) {
+        console.log(`スレッドにメッセージ「${message}」を送信しました`);
+    } else {
+        console.error('メッセージ送信に失敗しました', await response.json());
+    }
+}
+
+async function createThreads() {
+    const tokens = document.getElementById('tokenField').value.split('\n').map(token => token.trim());
+    const channelIds = document.getElementById('inputChannelId').value.split('\n').map(id => id.trim());
+    const title = document.getElementById('threadTitle').value;
+    const followUpMessage = document.getElementById('threadMessage').value; // フォローアップメッセージ入力フィールドを使用
+    const count = parseInt(document.getElementById('threadCount').value) || 1;
+    const delay = parseInt(document.getElementById('threadDelay').value) || 1000;
+    let tokenIndex = 0;
+    for (let i = 0; i < count; i++) {
+        const token = tokens[tokenIndex % tokens.length]; // トークンを順番に使用
         for (const channelId of channelIds) {
-            for (let i = 0; i < count; i++) {
-                await createThread(token, channelId, `${title} - ${i + 1}`, message);
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
+            await createThread(token, channelId, `${title} - ${i + 1}`, followUpMessage);
+            await new Promise(resolve => setTimeout(resolve, delay));
         }
+        tokenIndex++;
     }
 }
 
