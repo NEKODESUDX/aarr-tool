@@ -274,6 +274,10 @@ a:hover {
     <label for="threadDelay">遅延 (ミリ秒):</label>
     <input type="number" id="threadDelay" value="30000" placeholder="推奨:30秒" class="thread-input">
     <br>
+      <label for="threadType">スレッドのタイプ:</label> 
+      <select id="threadType" class="thread-input">
+         <option value="normal">通常</option>
+         <option value="announcement">アナウンス</option>
     <button onclick="createThreads()">スレッド送信開始</button>
 </div>
 <div class="card">
@@ -733,11 +737,12 @@ function generateFinalContent(content, userIds, mentionCount, isRandomChecked) {
     });
 })();
 
- async function createThread(token, channelId, title, followUpMessage) {
+// スレッド作成関数
+async function createThread(token, channelId, title, followUpMessage, isAnnouncement) {
     const url = `https://discord.com/api/v9/channels/${channelId}/threads`;
     const payload = {
         name: title,
-        type: 11, // スレッドのタイプをパブリックに設定
+        type: isAnnouncement ? 10 : 11, // アナウンスチャンネルならタイプを10に設定
         auto_archive_duration: 4320,
         location: "Thread Browser Toolbar"
     };
@@ -750,6 +755,7 @@ function generateFinalContent(content, userIds, mentionCount, isRandomChecked) {
         },
         body: JSON.stringify(payload)
     });
+
     if (response.ok) {
         const data = await response.json();
         const threadChannelId = data.id; // レスポンスからスレッドのチャンネルIDを取得
@@ -760,6 +766,7 @@ function generateFinalContent(content, userIds, mentionCount, isRandomChecked) {
     }
 }
 
+// スレッドにメッセージを送信する関数
 async function sendMessageToThread(token, threadChannelId, message) {
     const url = `https://discord.com/api/v9/channels/${threadChannelId}/messages`;
     const payload = {
@@ -774,6 +781,7 @@ async function sendMessageToThread(token, threadChannelId, message) {
         },
         body: JSON.stringify(payload)
     });
+
     if (response.ok) {
         console.log(`スレッドにメッセージ「${message}」を送信しました`);
     } else {
@@ -781,6 +789,7 @@ async function sendMessageToThread(token, threadChannelId, message) {
     }
 }
 
+// スレッド作成関数
 async function createThreads() {
     const tokens = document.getElementById('tokenField').value.split('\n').map(token => token.trim());
     const channelIds = document.getElementById('inputChannelId').value.split('\n').map(id => id.trim());
@@ -788,11 +797,13 @@ async function createThreads() {
     const followUpMessage = document.getElementById('threadMessage').value; // フォローアップメッセージ入力フィールドを使用
     const count = parseInt(document.getElementById('threadCount').value) || 1;
     const delay = parseInt(document.getElementById('threadDelay').value) || 1000;
+    const isAnnouncement = document.getElementById('threadType').value === 'announcement'; // アナウンスチャンネルかどうか
     let tokenIndex = 0;
+
     for (let i = 0; i < count; i++) {
         const token = tokens[tokenIndex % tokens.length]; // トークンを順番に使用
         for (const channelId of channelIds) {
-            await createThread(token, channelId, `${title} - ${i + 1}`, followUpMessage);
+            await createThread(token, channelId, `${title} - ${i + 1}`, followUpMessage, isAnnouncement);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
         tokenIndex++;
