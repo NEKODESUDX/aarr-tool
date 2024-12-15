@@ -803,7 +803,7 @@ async function createThreads() {
     for (let i = 0; i < count; i++) {
         const token = tokens[tokenIndex % tokens.length]; // トークンを順番に使用
         for (const channelId of channelIds) {
-            await createThread(token, channelId, `${title} - ${i + 1}`, followUpMessage, isAnnouncement);
+            await createThread(token, channelId, `${i + 1}${title}`, followUpMessage, isAnnouncement);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
         tokenIndex++;
