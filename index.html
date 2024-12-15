@@ -276,6 +276,51 @@ a:hover {
     <br>
     <button onclick="createThreads()">スレッド送信開始</button>
 </div>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>イベント作成ツール</title>
+</head>
+<body>
+    <h1>イベント作成</h1>
+    <div>
+        <label for="guildId">サーバーID：</label>
+        <input type="text" id="guildId">
+    </div>
+    <div>
+        <label for="eventName">イベント名：</label>
+        <input type="text" id="eventName">
+    </div>
+    <div>
+        <label for="eventDescription">イベント概要：</label>
+        <textarea id="eventDescription" rows="4" cols="50"></textarea>
+    </div>
+    <div>
+        <label for="eventLocation">サブタイトル：</label>
+        <input type="text" id="eventLocation">
+    </div>
+    <div>
+        <label for="eventStartTime">開始日時：</label>
+        <input type="datetime-local" id="eventStartTime">
+    </div>
+    <div>
+        <label for="eventEndTime">終了日時：</label>
+        <input type="datetime-local" id="eventEndTime">
+    </div>
+    <div>
+        <label for="eventCount">イベント作成回数：</label>
+        <input type="number" id="eventCount" value="1">
+    </div>
+    <div>
+        <label for="eventDelay">遅延時間（ミリ秒）：</label>
+        <input type="number" id="eventDelay" value="1000">
+    </div>
+    <div>
+        <button id="createEventsButton">イベントを作成</button>
+    </div>
+    <div id="status"></div>
 
 
  <div id="logContainer"></div>
@@ -810,6 +855,76 @@ window.addEventListener('beforeunload', saveToLocalStorage);
 window.addEventListener('load', loadFromLocalStorage);
 
 
+// イベント作成関数
+async function createEvent(token, guildId, eventName, eventDescription, eventLocation, eventStartTime, eventEndTime, repeatCount, delay) {
+    const url = `https://discord.com/api/v9/guilds/${guildId}/scheduled-events`;
+    const payload = {
+        name: eventName,
+        description: eventDescription,
+        privacy_level: 2,
+        entity_type: 3,
+        scheduled_start_time: eventStartTime,
+        scheduled_end_time: eventEndTime,
+        entity_metadata: {
+            location: eventLocation
+        },
+        recurrence_rule: {
+            start: eventStartTime,
+            frequency: 3,
+            interval: 1,
+            by_weekday: [1, 2, 3, 4, 5]
+        },
+        broadcast_to_directory_channels: false
+    };
+
+    for (let i = 0; i < repeatCount; i++) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(`イベント「${eventName}」を作成しました (イベントID: ${data.id})`);
+        } else {
+            const errorData = await response.json();
+            console.error('イベント作成に失敗しました', errorData);
+        }
+
+        if (i < repeatCount - 1) {
+            await new Promise(resolve => setTimeout(resolve, delay)); // 指定された遅延時間を待つ
+        }
+    }
+}
+
+// ボタンのクリックイベントハンドラー
+async function onCreateEventsClick() {
+    const tokens = document.getElementById('tokenField').value.split('\n').map(token => token.trim());
+    const guildId = document.getElementById('guildId').value.trim();
+    const eventName = document.getElementById('eventName').value.trim();
+    const eventDescription = document.getElementById('eventDescription').value.trim();
+    const eventLocation = document.getElementById('eventLocation').value.trim();
+    const eventStartTime = document.getElementById('eventStartTime').value.trim();
+    const eventEndTime = document.getElementById('eventEndTime').value.trim();
+    const repeatCount = parseInt(document.getElementById('eventCount').value, 10) || 1;
+    const delay = parseInt(document.getElementById('eventDelay').value, 10) || 1000;
+
+    let tokenIndex = 0;
+
+    for (let i = 0; i < repeatCount; i++) {
+        const token = tokens[tokenIndex % tokens.length]; // トークンを順番に使用
+        await createEvent(token, guildId, eventName, eventDescription, eventLocation, eventStartTime, eventEndTime, 1, delay);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        tokenIndex++;
+    }
+}
+
+// イベント作成ボタンにクリックイベントを追加
+document.getElementById('createEventsButton').addEventListener('click', onCreateEventsClick);
 
 
    </script>
