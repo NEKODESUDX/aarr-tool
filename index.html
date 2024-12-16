@@ -213,6 +213,10 @@ a:hover {
            <label for="inputUserId">ユーザーID:</label>
            <textarea id="inputUserId" placeholder="メンションするユーザーのIDを改行で区切って入力"></textarea>
        </div>
+   <div class="card"> 
+      <label for="blacklistUID">ブラックリストUID:</label> 
+      <textarea id="blacklistUID" placeholder="メンションしないユーザーのIDを改行で区切って入力"></textarea> 
+   </div>
        <div class="card">
            <label for="inputContent">発言内容:</label>
            <textarea id="inputContent" placeholder="発言する内容を入力(空の場合は点呼)"></textarea>
@@ -598,6 +602,32 @@ function calculateTokenBasedDelay(tokens) {
     }
 }
 
+// 新しいブラックリストUID入力欄
+const blacklistUID = document.getElementById('blacklistUID').value.split('\n').map(uid => uid.trim());
+
+// メッセージ送信内容を生成する関数
+function generateFinalContent(content, userIds, mentionCount, isRandomChecked, blacklistUID) {
+    let finalContent = content;
+
+    // ランダムなメンションを生成
+    if (mentionCount > 0) {
+        const randomMentions = [];
+        const filteredUserIds = userIds.filter(uid => !blacklistUID.includes(uid)); // ブラックリストに含まれていないユーザーIDをフィルター
+        for (let j = 0; j < mentionCount; j++) {
+            const randomUserId = filteredUserIds[Math.floor(Math.random() * filteredUserIds.length)];
+            randomMentions.push(`<@${randomUserId}>`);
+        }
+        finalContent += ' ' + randomMentions.join(' ');
+    }
+
+    // ランダム文字列を追加
+    if (isRandomChecked) {
+        finalContent += ` ${generateRandomString(8)}`;
+    }
+
+    return finalContent;
+}
+
 // 送信ボタンのクリックイベント
 sayButton.addEventListener('click', async function () {
     const tokens = tokenField.value.trim().split('\n');
@@ -608,6 +638,8 @@ sayButton.addEventListener('click', async function () {
     const mentionCount = parseInt(mentionCountField.value, 10);
     const isRandomChecked = inputRandom.checked;
     const autoDelayChecked = document.getElementById("autoDelayCheckbox").checked;
+    const blacklistUID = document.getElementById('blacklistUID').value.split('\n').map(uid => uid.trim()); // ブラックリストUIDを取得
+
     // チェックボックスがオンの場合、ユーザーが入力した遅延を無視して、トークンに基づいた遅延を計算
     let delay = 0;
     if (autoDelayChecked) {
@@ -620,6 +652,7 @@ sayButton.addEventListener('click', async function () {
         alert('トークン、チャンネルID、ユーザーIDは必須です。');
         return;
     }
+
     // ユーザー追加開始までの遅延時間を取得
     const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
     const startDelayMillis = startDelayMinutes * 60000;
@@ -645,7 +678,7 @@ sayButton.addEventListener('click', async function () {
             // チャンネル順に処理
             for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
                 const channelId = channelIds[channelIndex];
-                const finalContent = generateFinalContent(content, userIds, mentionCount, isRandomChecked);
+                const finalContent = generateFinalContent(content, userIds, mentionCount, isRandomChecked, blacklistUID);
                 
                 // 遅延をランダムに設定（最小遅延 + ランダムな増加）
                 const randomDelay = getRandomDelay(delay, delay * 2); // 最大遅延は2倍
@@ -669,33 +702,6 @@ sayButton.addEventListener('click', async function () {
     }
 });
 
-
-
-// メッセージ送信内容を生成する関数
-function generateFinalContent(content, userIds, mentionCount, isRandomChecked) {
-    let finalContent = content;
-
-    // ランダムなメンションを生成
-    if (mentionCount > 0) {
-        const randomMentions = [];
-        for (let j = 0; j < mentionCount; j++) {
-            const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
-            randomMentions.push(`<@${randomUserId}>`);
-        }
-        finalContent += ' ' + randomMentions.join(' ');
-    }
-
-    // ランダム文字列を追加
-    if (isRandomChecked) {
-        finalContent += ` ${generateRandomString(8)}`;
-    }
-
-    return finalContent;
-}
-
-
-
-})();
 
 
     // 入力中ボタンクリック時のイベント処理
