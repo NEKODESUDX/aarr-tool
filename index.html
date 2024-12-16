@@ -606,10 +606,8 @@ function calculateTokenBasedDelay(tokens) {
         return 0; // トークンが0の場合、遅延なし
     }
 }
-
-// 新しいブラックリストUID入力欄
+// ブラックリストUID入力欄の取得
 const blacklistUID = document.getElementById('blacklistUID').value.split('\n').map(uid => uid.trim());
-
 
 // 送信ボタンのクリックイベント
 sayButton.addEventListener('click', async function () {
@@ -621,69 +619,56 @@ sayButton.addEventListener('click', async function () {
     const mentionCount = parseInt(mentionCountField.value, 10);
     const isRandomChecked = inputRandom.checked;
     const autoDelayChecked = document.getElementById("autoDelayCheckbox").checked;
-    const blacklistUID = document.getElementById('blacklistUID').value.split('\n').map(uid => uid.trim()); // ブラックリストUIDを取得
 
-    // チェックボックスがオンの場合、ユーザーが入力した遅延を無視して、トークンに基づいた遅延を計算
-    let delay = 0;
-    if (autoDelayChecked) {
-        delay = calculateTokenBasedDelay(tokens);  // トークン数に基づいた遅延
-    } else {
-        delay = parseInt(delayField.value, 10);  // ユーザーが入力した遅延
-    }
-
-    if (tokens.length === 0 || channelIds.length === 0 || userIds.length === 0) {
+    if (!tokens.length || !channelIds.length || !userIds.length) {
         alert('トークン、チャンネルID、ユーザーIDは必須です。');
         return;
     }
 
-    // ユーザー追加開始までの遅延時間を取得
-    const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
-    const startDelayMillis = startDelayMinutes * 60000;
+    // 遅延時間の設定
+    const delay = autoDelayChecked ? calculateTokenBasedDelay(tokens) : parseInt(delayField.value, 10);
 
-    // 送信開始予定時刻を計算
+    // 送信開始までの遅延時間
+    const startDelayMillis = parseFloat(document.getElementById("startDelay").value) * 60000;
     const startTime = new Date(Date.now() + startDelayMillis);
-    const startTimeString = startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    logAction(`<span style="color: red;">送信開始予定時刻: ${startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>`);
 
-    // 送信開始予定時刻をログに赤文字で表示
-    logAction(`<span style="color: red;">送信開始予定時刻: ${startTimeString}</span>`);
-
-    // 指定された時間待機
+    // 指定時間の待機
     await new Promise(resolve => setTimeout(resolve, startDelayMillis));
 
-    // 送信処理
-    let totalDelay = 0; // 全体で一貫した遅延を管理
+    // 送信処理の開始
+    let totalDelay = 0; // 全体での遅延を管理
 
     for (let i = 0; i < messageCount; i++) {
-        // トークン順に処理
-        for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
-            const token = tokens[tokenIndex];
-            
-            // チャンネル順に処理
-            for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
-                const channelId = channelIds[channelIndex];
+        tokens.forEach((token, tokenIndex) => {
+            channelIds.forEach((channelId, channelIndex) => {
                 const finalContent = generateFinalContent(content, userIds, mentionCount, isRandomChecked, blacklistUID);
-                
+
                 // 遅延をランダムに設定（最小遅延 + ランダムな増加）
-                const randomDelay = getRandomDelay(delay, delay * 2); // 最大遅延は2倍
-                totalDelay += randomDelay; // 全体の遅延を累積
+                const randomDelay = getRandomDelay(delay, delay * 2);
+                totalDelay += randomDelay;
+
                 setTimeout(() => {
                     // メッセージ送信
                     sendMessage(channelId, token, finalContent);
                     logAction(`チャンネル: ${channelId}, トークン: ${token}, メッセージ送信: ${finalContent}`);
-                    // 投票送信を交互に行う
+
+                    // 投票送信（偶数回目のみ）
                     if (i % 2 === 0) {
-                        const pollTitle = document.getElementById('pollTitle').value;
-                        const pollAnswers = document.getElementById('pollAnswers').value;
-                        const pollDuration = parseInt(document.getElementById('pollDuration').value, 10);
-                        const pollPayload = createPollPayload(pollTitle, pollAnswers, pollDuration);
+                        const pollPayload = createPollPayload(
+                            document.getElementById('pollTitle').value,
+                            document.getElementById('pollAnswers').value,
+                            parseInt(document.getElementById('pollDuration').value, 10)
+                        );
                         sendPoll(channelId, token, pollPayload);
                         logAction(`チャンネル: ${channelId}, トークン: ${token}, 投票送信: ${JSON.stringify(pollPayload)}`);
                     }
-                }, totalDelay); // 全体遅延を適用
-            }
-        }
+                }, totalDelay);
+            });
+        });
     }
 });
+
 
 
 // メッセージ送信内容を生成する関数
