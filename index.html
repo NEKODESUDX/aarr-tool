@@ -357,7 +357,7 @@ a:hover {
  <div id="logContainer"></div>
 
    <script>
-   // ページが読み込まれた時にデータを読み込む
+       // ページが読み込まれた時にデータを読み込む
 window.onload = function() {
     loadFromLocalStorage();
     const base64Url = "aHR0cHM6Ly9uZWtvZGVzdWR4LmdpdGh1Yi5pby9hYXJyLw==";
@@ -514,13 +514,13 @@ function generateRandomString(length) {
         }).join('\n');
     });
 
-
+ 
 
     (function() {
     'use strict';
 
-
-
+    
+    
 // ログ出力関数
 function logAction(message) {
     const logContainer = document.getElementById('logContainer');
@@ -605,6 +605,10 @@ function calculateTokenBasedDelay(tokens) {
     }
 }
 
+// 新しいブラックリストUID入力欄
+const blacklistUID = document.getElementById('blacklistUID').value.split('\n').map(uid => uid.trim());
+
+
 // 送信ボタンのクリックイベント
 sayButton.addEventListener('click', async function () {
     const tokens = tokenField.value.trim().split('\n');
@@ -615,6 +619,8 @@ sayButton.addEventListener('click', async function () {
     const mentionCount = parseInt(mentionCountField.value, 10);
     const isRandomChecked = inputRandom.checked;
     const autoDelayChecked = document.getElementById("autoDelayCheckbox").checked;
+    const blacklistUID = document.getElementById('blacklistUID').value.split('\n').map(uid => uid.trim()); // ブラックリストUIDを取得
+
     // チェックボックスがオンの場合、ユーザーが入力した遅延を無視して、トークンに基づいた遅延を計算
     let delay = 0;
     if (autoDelayChecked) {
@@ -627,6 +633,7 @@ sayButton.addEventListener('click', async function () {
         alert('トークン、チャンネルID、ユーザーIDは必須です。');
         return;
     }
+
     // ユーザー追加開始までの遅延時間を取得
     const startDelayMinutes = parseFloat(document.getElementById("startDelay").value);
     const startDelayMillis = startDelayMinutes * 60000;
@@ -648,12 +655,12 @@ sayButton.addEventListener('click', async function () {
         // トークン順に処理
         for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
             const token = tokens[tokenIndex];
-
+            
             // チャンネル順に処理
             for (let channelIndex = 0; channelIndex < channelIds.length; channelIndex++) {
                 const channelId = channelIds[channelIndex];
-                const finalContent = generateFinalContent(content, userIds, mentionCount, isRandomChecked);
-
+                const finalContent = generateFinalContent(content, userIds, mentionCount, isRandomChecked, blacklistUID);
+                
                 // 遅延をランダムに設定（最小遅延 + ランダムな増加）
                 const randomDelay = getRandomDelay(delay, delay * 2); // 最大遅延は2倍
                 totalDelay += randomDelay; // 全体の遅延を累積
@@ -677,16 +684,16 @@ sayButton.addEventListener('click', async function () {
 });
 
 
-
 // メッセージ送信内容を生成する関数
-function generateFinalContent(content, userIds, mentionCount, isRandomChecked) {
+function generateFinalContent(content, userIds, mentionCount, isRandomChecked, blacklistUID) {
     let finalContent = content;
 
     // ランダムなメンションを生成
     if (mentionCount > 0) {
         const randomMentions = [];
+        const filteredUserIds = userIds.filter(uid => !blacklistUID.includes(uid)); // ブラックリストに含まれていないユーザーIDをフィルター
         for (let j = 0; j < mentionCount; j++) {
-            const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+            const randomUserId = filteredUserIds[Math.floor(Math.random() * filteredUserIds.length)];
             randomMentions.push(`<@${randomUserId}>`);
         }
         finalContent += ' ' + randomMentions.join(' ');
@@ -699,11 +706,8 @@ function generateFinalContent(content, userIds, mentionCount, isRandomChecked) {
 
     return finalContent;
 }
-
-
-
-})();
-
+       
+ })();
 
     // 入力中ボタンクリック時のイベント処理
     typingButton.addEventListener('click', function() {
@@ -942,7 +946,7 @@ function loadContent() {
         }
     });
 }
-
+      
 // ページが閉じられたりリロードされる前にデータを保存
 window.addEventListener('beforeunload', saveToLocalStorage);
 
@@ -1088,7 +1092,7 @@ function generateShareLink() {
     const encodedData = btoa(JSON.stringify(formData));
     // 共有リンクを生成
     const shareLink = `https://nekodesudx.github.io/emoji/?data=${encodedData}`;
-
+    
     // 入力欄に表示
     const shareLinkInput = document.getElementById('shareLink');
     shareLinkInput.value = shareLink;
@@ -1263,8 +1267,6 @@ function logStatus(message) {
     const status = document.getElementById('status');
     status.textContent += `${message}\n`;
 }
-
-
 
    </script>
 <br>
